@@ -6,7 +6,7 @@
 angular.module('Planz')
     .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $state, $stateParams, $http, eventfulKey, rootRef) {
         var eventIndex = 0;
-        var pageIndex = 1;
+        var pageIndex = 0;
 
         var categories = {
             music: {'count': 0},
@@ -126,7 +126,7 @@ angular.module('Planz')
                                     date: $scope.date + '-' + $scope.date,
                                     sort_order: 'popularity',
                                     page_size: 100,
-                                    page_number: pageIndex
+                                    page_number: pageIndex + 1
                                 }
                             }).then(function (res) {
                                 $scope.dayEvent.events[pageIndex] = res.data.events.event;
