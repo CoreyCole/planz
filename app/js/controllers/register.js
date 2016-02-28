@@ -10,6 +10,8 @@ angular.module('Planz')
         $scope.city = 'Vancouver';
         $scope.date = new Date();
         $scope.time = moment();
+                
+        $scope.loading = false;
 
         $scope.register = function() {
             var plan = {
@@ -21,6 +23,7 @@ angular.module('Planz')
 
             $scope.Events = $firebaseArray(rootRef.child('Events'));
             $scope.Events.$loaded().then(function(ref) {
+                $scope.loading = true;
                 var flag = false;
                 for (var i = 0; i < ref.length; i++) {
                     if (ref[i].date === getDateEventfulFormat())
@@ -41,18 +44,27 @@ angular.module('Planz')
                             page_number: 1,
                         }
                     }).then(function (res) {
-                        console.log(res.data.events.event[1]);
+                        var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
+                        for (var i=0; i<res.data.events.event.length; i++) {
+                            if (res.data.events.event[i].image == null) {
+                                res.data.events.event[i].image = { medium: { url: notAvailableImg } }
+                            } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
+                                res.data.events.event[i].image.medium.url = notAvailableImg;
+                            }
+                        }
                         $scope.Events.$add({
                             events: [res.data.events.event],
                             date: getDateEventfulFormat(),
                         });
                         $scope.Planz.$add(plan).then(function(ref) {
                             $state.go('start', { planid : ref.key() });
+                            $scope.loading = false;
                         });
                     });
                 } else {
                     $scope.Planz.$add(plan).then(function(ref) {
                         $state.go('start', { planid : ref.key() });
+                        $scope.loading = false;
                     });
                 }
             });

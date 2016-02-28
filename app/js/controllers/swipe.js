@@ -5,6 +5,8 @@
  */
 angular.module('Planz')
     .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $state, $stateParams, $http, eventfulKey, rootRef) {
+        $scope.loading = false;
+        
         var eventIndex = 0;
         var pageIndex = 0;
 
@@ -110,8 +112,11 @@ angular.module('Planz')
                             }
                         }
                     }
+
+                    $scope.loading = true;
                     eventIndex = 0;
                     pageIndex += 1;
+
                     $http({
                         method: 'GET',
                         url: 'http://api.eventful.com/json/events/search',
@@ -124,8 +129,18 @@ angular.module('Planz')
                             page_number: pageIndex + 1
                         }
                     }).then(function (res) {
+                        var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
+                        for (var i=0; i<res.data.events.event.length; i++) {
+                            if (res.data.events.event[i].image == null) {
+                                res.data.events.event[i].image = { medium: { url: notAvailableImg } }
+                            } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
+                                res.data.events.event[i].image.medium.url = notAvailableImg;
+                            }
+                        }
+
                         $scope.dayEvent.events[pageIndex] = res.data.events.event;
                         $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
+                            $scope.loading = false;
                             console.log('it worked!');
                             console.log($scope.dayEvent.events.length);
                             getNextPageAndEventIndex();
