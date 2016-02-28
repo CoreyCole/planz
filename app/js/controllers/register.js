@@ -12,18 +12,6 @@ angular.module('Planz')
         $scope.time = moment();
         $scope.numSwipes;
         
-        function copyText() {
-            var text = document.getElementById("shareURL");
-            text.select();
-            try {
-                var successful = document.execCommand('copy');
-                var msg = successful ? 'successful' : 'unsuccessful';
-                console.log('Copying text command was ' + msg);
-            } catch (err) {
-                console.log('Oops, unable to copy');
-            }
-        }
-        
         function getDateEventfulFormat() {
             var year = $scope.date.getFullYear().toString();
             var month = $scope.date.getMonth();
