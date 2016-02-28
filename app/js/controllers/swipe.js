@@ -4,8 +4,9 @@
  * # MainCtrl
  */
 angular.module('Planz')
-    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $stateParams, $http, eventfulKey, rootRef) {
-        var eventIndex = 95;
+    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $state, $stateParams, $http, eventfulKey, rootRef) {
+        var eventIndex = 0;
+        var pageIndex = 1;
 
         var categories = {
             music: {'count': 0},
@@ -42,24 +43,30 @@ angular.module('Planz')
         $scope.plan = $firebaseObject(rootRef.child('Planz').child($stateParams.planid));
         $scope.plan.$loaded().then(function (planref) {
             $scope.date = planref.date;
+            $scope.numSwipes = planref.numSwipes;
 
-            $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
-            $scope.planEvents.$loaded().then(function(planEventsref) {
+            $scope.success = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('success'))
+            $scope.success.$loaded().then(function(planEventsref) {
+                $scope.success.$watch(function() {
+                    $state.go('success', { planid : $stateParams.planid });
+                });
 
-                $scope.planCats = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('categories'));
-                $scope.planCats.$loaded().then(function(planCatsref) {
+                $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
+                $scope.planEvents.$loaded().then(function(planEventsref) {
 
-                    $scope.Events = $firebaseArray(rootRef.child('Events'));
-                    $scope.Events.$loaded().then(function(eventsref) {
+                    $scope.planCats = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('categories'));
+                    $scope.planCats.$loaded().then(function(planCatsref) {
 
-                        for (var i = 0; i < eventsref.length; i++) {
-                            if (eventsref[i].date === $scope.date) {
-                                $scope.dayEvents = eventsref[i].events;
-                                $scope.currPage = eventsref[i].page;
-                                $scope.firebaseEventID = eventsref[i].$id;
+                        $scope.Events = $firebaseArray(rootRef.child('Events'));
+                        $scope.Events.$loaded().then(function(eventsref) {
+
+                            for (var i = 0; i < eventsref.length; i++) {
+                                if (eventsref[i].date === $scope.date) {
+                                    $scope.dayEvent = eventsref[i];
+                                }
                             }
-                        }
-                        $scope.currentEvent = $scope.dayEvents[eventIndex];
+                            $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
+                        });
                     });
                 });
             });
@@ -78,11 +85,12 @@ angular.module('Planz')
 
                     if (!planEvent) {
                         if (right) {
-                            $scope.planEvents.$add({ eventID: planEventID, likes: 1, dislikes: 0});
+                            planEvent = {eventID: planEventID, likes: 1, dislikes: 0};
                         }
                         else {
-                            $scope.planEvents.$add({ eventID: planEventID, likes: 0, dislikes: 1});
+                            planEvent = {eventID: planEventID, likes: 0, dislikes: 1};
                         }
+                        $scope.planEvents.$add(planEvent);
                     }
 
                     else {
@@ -97,30 +105,37 @@ angular.module('Planz')
                         });
                     }
 
-                    eventIndex += 1;
-                    if (eventIndex < $scope.dayEvents.length) {
-                        $scope.currentEvent = $scope.dayEvents[eventIndex];
-                    } else {
-                        $scope.currPage += 1;
-                        $http({
-                            method: 'GET',
-                            url: 'http://api.eventful.com/json/events/search',
-                            params: {
-                                app_key: eventfulKey,
-                                where: $scope.city,
-                                date: $scope.date + '-' + $scope.date,
-                                sort_order: 'popularity',
-                                page_size: 100,
-                                page_number: $scope.currPage
-                            }
-                        }).then(function (res) {
-                            var arr = res.data.events.event;
-                            for (var i = 0; i < arr.length; i++) {
-                                $scope.dayEvents.push( arr[i] );
-                            }
-                            console.log($scope.dayEvents.length);
-                        });
-                        $scope.currentEvent = $scope.dayEvents[eventIndex];
+                    if (planEvent.likes >= $scope.numSwipes) {
+                        $scope.success.$add({event: $scope.currentEvent});
+                    }
+
+                    else {
+                        eventIndex += 1;
+                        if (eventIndex < $scope.dayEvent.events[pageIndex].length) {
+                            $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
+                        } 
+                        else {
+                            eventIndex = 0;
+                            pageIndex += 1;
+                            $http({
+                                method: 'GET',
+                                url: 'http://api.eventful.com/json/events/search',
+                                params: {
+                                    app_key: eventfulKey,
+                                    where: $scope.city,
+                                    date: $scope.date + '-' + $scope.date,
+                                    sort_order: 'popularity',
+                                    page_size: 100,
+                                    page_number: pageIndex
+                                }
+                            }).then(function (res) {
+                                $scope.dayEvent.events[pageIndex] = res.data.events.event;
+                                $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
+                                    console.log('it worked!');
+                                    $scope.currentEvent = $scope.dayEvents[pageIndex][eventIndex];
+                                });
+                            });
+                        }
                     }
                 });
             });

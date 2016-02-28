@@ -21,6 +21,10 @@ angular.module('Planz')
             .state('swipe', {
                 url: '/swipe/:planid',
                 templateUrl: 'views/swipe.html'
+            })
+            .state('success', {
+                url: '/success/:planid',
+                templateUrl: 'views/success.html'
             });
 
         $urlRouterProvider.otherwise('/');

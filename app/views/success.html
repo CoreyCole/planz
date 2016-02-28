@@ -1,0 +1,15 @@
+<div class="start" ng-controller="SuccessCtrl">
+    <p>Event success!</p>
+    <md-card>
+        <img ng-src="{{currentEvent.image.medium.url}}" class="md-card-image" alt="event image">
+        <md-card-title>
+            <md-card-title-text>
+                <span class="md-headline">{{currentEvent.title}}</span>
+            </md-card-title-text>
+        </md-card-title>
+        <md-card-content>
+            <p>{{currentEvent.venue_address}}</p>
+            <p>{{currentEvent.start_time}}</p>
+        </md-card-content>
+    </md-card>
+</div>
