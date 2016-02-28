@@ -80,15 +80,12 @@ angular.module('Planz')
                     app_key: eventfulKey,
                     where: $scope.city,
                     date: $scope.getDate() + '-' + $scope.getDate(),
-                    sort_order: 'popularity'
+                    sort_order: 'popularity',
                     page_size: 100,
                     page_number: curPage
                 }
             }).then(function (res) {
                 // push to firebase
             });
-            }
         };
-        
-        
     });
