@@ -5,6 +5,8 @@
  */
 angular.module('Planz')
     .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $stateParams, eventfulKey, rootRef) {
+        var eventIndex = 0;
+
         var categories = {
             music: {'count': 0},
             conference: {'count': 0},
@@ -38,10 +40,9 @@ angular.module('Planz')
         };
 
         $scope.plan = $firebaseObject(rootRef.child('Planz').child($stateParams.planid));
-
         $scope.plan.$loaded().then(function (planref) { 
 
-            $scope.planEvents = $firebaseArrayrootRef.child('Planz').child($stateParams.planid).child('events'));
+            $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
             $scope.planEvents.$loaded().then(function(planEventsref) {
 
                 $scope.planCats = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('categories'));
@@ -54,52 +55,52 @@ angular.module('Planz')
                             if (eventsref[i].date === planref.date)
                                 $scope.dayEvents = eventsref[i].events;
                         }
-                        console.dir($scope.dayEvents);
-
-                        var eventIndex = 0;
-
-                        // TODO when matthew finds his precious categories
-                        // function getNextIndex() {
-                        //     var i = 0;
-                        //     while (i < $scope.dayEvents.length && $scope.planCats.indexOf($scope.dayEvents[i].)) {
-                        //         i++;
-                        //     }
-                        // }
-
                         $scope.currentEvent = $scope.dayEvents[eventIndex];
-
-                        $scope.swipe = function(right) {
-                            var planEventID = $scope.currentEvent.id;
-                            var planEvent;
-                            for (var i = 0; i < planEventsref.length; i++) {
-                                if (planEventsref[i].eventID === planEventID)
-                                    planEvent = planEventsref[i];
-                            }
-
-                            if (!planEvent) {
-                                if (right) {
-                                    $scope.planEvents.$add({ eventID: evenID, likes: 1, dislikes: 0});
-                                    console.log("write");
-                                }
-                                else {
-                                    $scope.planEvents.$add({ eventID: evenID, likes: 0, dislikes: 1});
-                                    console.log("write");
-                                }
-                            }
-                            else {
-                                if (right) {
-                                    currEvent.likes += 1;
-                                }
-                                else {
-                                    currEvent.dislikes += 1;
-                                }
-                                $scope.planEvents.$save(evenID).then(function(updateRef) {
-                                    console.log('it did someting');
-                                });
-                            }
-                        }
                     });
                 });
             });
         });
+
+        $scope.swipe = function(right) {
+            $scope.Events.$loaded().then(function(eventsref) {
+                $scope.planEvents.$loaded().then(function(planEventsref) {
+
+                    var planEventID = $scope.currentEvent.id;
+                    var planEvent;
+                    for (var i = 0; i < planEventsref.length; i++) {
+                        if (planEventsref[i].eventID === planEventID)
+                            planEvent = planEventsref[i];
+                    }
+
+                    if (!planEvent) {
+                        if (right) {
+                            $scope.planEvents.$add({ eventID: planEventID, likes: 1, dislikes: 0});
+                        }
+                        else {
+                            $scope.planEvents.$add({ eventID: planEventID, likes: 0, dislikes: 1});
+                        }
+                    }
+
+                    else {
+                        if (right) {
+                            planEvent.likes += 1;
+                        }
+                        else {
+                            planEvent.dislikes += 1;
+                        }
+                        $scope.planEvents.$save(planEvent).then(function(updateRef) {
+                            console.log('it did someting');
+                        });
+                    }
+                });
+            });
+        };
+
+        // TODO when matthew finds his precious categories
+        // function getNextIndex() {
+        //     var i = 0;
+        //     while (i < $scope.dayEvents.length && $scope.planCats.indexOf($scope.dayEvents[i].)) {
+        //         i++;
+        //     }
+        // }
     });
