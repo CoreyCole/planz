@@ -4,8 +4,10 @@
  * # MainCtrl
  */
 angular.module('Planz')
-    .controller('SwipeCtrl', function ($scope) {
-        $scope.categories = {
+    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $stateParams, eventfulKey, rootRef) {
+        var eventIndex = 0;
+
+        var categories = {
             music: {'count': 0},
             conference: {'count': 0},
             comedy: {'count': 0},
@@ -36,4 +38,28 @@ angular.module('Planz')
             technology: {'count': 0},
             other: {'count': 0}
         };
+
+        var planObject = $firebaseObject(rootRef.child('Planz').child($stateParams.planid));
+
+        planObject.$bindTo($scope, "plan");
+
+        planObject.$loaded(function () { 
+            console.log($scope.plan);
+
+            var eventsList = $firebaseObject(rootRef.child('Planz').child($stateParams.planid).child('events'));
+            var dayObject = $firebaseObject(rootRef.child('Events').child($scope.plan.dayid));
+            
+            dayObject.$bindTo($scope, "day");
+
+            dayObject.$loaded(function() {
+                console.log($scope.day);
+
+                swipe = function(right) {
+                    if (eventsList.$indexFor($scope.day))
+                    $scope.plan.$indexFor
+                }
+                
+
+            });
+        });
     });

@@ -7,7 +7,7 @@ angular.module('Planz')
     .controller('IndexCtrl', function ($scope,  $firebaseObject, $firebaseArray, $state, eventfulKey, rootRef) {
         // download the data into a local object
         var syncObject = $firebaseObject(rootRef);
-        $scope.Planz = $firebaseArray(rootRef.child('Planz'));
+        $scope.Planz = $firebaseArray(rootRef.child('Planz').child());
 
         // synchronize the object with a three-way data binding
         // click on `index.html` above to see it used in the DOM!

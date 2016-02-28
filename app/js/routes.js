@@ -20,7 +20,7 @@ angular.module('Planz')
             })
             .state('swipe', {
                 url: '/swipe/:planid',
-                templateUrl: 'view/swipe.html'
+                templateUrl: 'views/swipe.html'
             });
 
         $urlRouterProvider.otherwise('/');
