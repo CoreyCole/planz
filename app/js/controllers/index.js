@@ -4,8 +4,15 @@
  * # MainCtrl
  */
 angular.module('Planz')
-    .controller('IndexCtrl', function ($scope) {
-        var ref = new Firebase('https://planz.firebaseio.com/');
+    .controller('IndexCtrl', function ($scope,  $firebaseObject) {
+        // download the data into a local object
+        var syncObject = $firebaseObject(rootRef);
+
+        // synchronize the object with a three-way data binding
+        // click on `index.html` above to see it used in the DOM!
+        syncObject.$bindTo($scope, "data");
+
+        console.log($scope.data);
         
         $scope.city = 'Vancouver';
         $scope.date = new Date();
