@@ -1,4 +1,4 @@
-'use strict';
+ 'use strict';
 
 /**
  * # MainCtrl
@@ -106,9 +106,9 @@ angular.module('Planz')
             $scope.city = planref.city;
 
             $scope.success = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('success'))
-            $scope.success.$loaded().then(function(planEventsref) {
+            $scope.success.$loaded().then(function(successref) {
 
-                if (planEventsref.length > 0 ) {
+                if (successref.length > 0 ) {
                     $state.go('success', { planid : $stateParams.planid });
                 }
 
