@@ -9,6 +9,7 @@ angular.module('Planz')
         
         var eventIndex = 0;
         var pageIndex = 0;
+        var pageLimit = 3;
 
         var categoriesCount = {
             music: {'count': 0},
@@ -102,6 +103,7 @@ angular.module('Planz')
             $scope.date = planref.date;
             $scope.numSwipes = planref.numSwipes;
             $scope.time = planref.time;
+            $scope.city = planref.city;
 
             $scope.success = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('success'))
             $scope.success.$loaded().then(function(planEventsref) {
@@ -126,122 +128,157 @@ angular.module('Planz')
                             for (var i = 0; i < eventsref.length; i++) {
                                 if (eventsref[i].date === $scope.date) {
                                     $scope.dayEvent = eventsref[i];
+                                    getNextPageAndEventIndex();
+                                    break;
                                 }
                             }
-                            $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
                         });
                     });
                 });
             });
         });
 
-        $scope.swipe = function(right) {
+        function getNextPageAndEventIndex() {
+            $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
             $scope.Events.$loaded().then(function(eventsref) {
-                $scope.planEvents.$loaded().then(function(planEventsref) {
 
-                    var planEventID = $scope.currentEvent.id;
-                    var planEventCat = $scope.currentEvent.categories.category;
-                    var planEvent;
-
-                    for (var i = 0; i < planEventsref.length; i++) {
-                        if (planEventsref[i].eventID === planEventID)
-                            planEvent = planEventsref[i];
+                for (var i = 0; i < eventsref.length; i++) {
+                    if (eventsref[i].date === $scope.date) {
+                        $scope.dayEvent = eventsref[i];
                     }
+                }
 
-                    if (!planEvent) {
-                        if (right) {
-                            planEvent = {eventID: planEventID, likes: 1, dislikes: 0};
-                        }
-                        else {
-                            planEvent = {eventID: planEventID, likes: 0, dislikes: 1};
-                        }
-                        $scope.planEvents.$add(planEvent);
-                    }
-
-                    else {
-                        if (right) {
-                            planEvent.likes += 1;
-                        }
-                        else {
-                            planEvent.dislikes += 1;
-                        }
-                        $scope.planEvents.$save(planEvent).then(function(updateRef) {
-                            console.log('it did someting');
-                        });
-                    }
-
-                    if (planEvent.likes >= $scope.numSwipes) {
-                        console.log('got here');
-                        $scope.success.$add({event: $scope.currentEvent});
-                    }
-
-                    else {
-                        eventIndex += 1;
-                        if (eventIndex < $scope.dayEvent.events[pageIndex].length) {
-                            $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
-                        } 
-                        else {
-                            $scope.loading = true;
-                            eventIndex = 0;
-                            pageIndex += 1;
-                            $http({
-                                method: 'GET',
-                                url: 'http://api.eventful.com/json/events/search',
-                                params: {
-                                    app_key: eventfulKey,
-                                    where: $scope.city,
-                                    date: $scope.date + '-' + $scope.date,
-                                    sort_order: 'popularity',
-                                    page_size: 100,
-                                    page_number: pageIndex + 1
-                                }
-                            }).then(function (res) {
-                                var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
-                                for (var i=0; i<res.data.events.event.length; i++) {
-                                    if (invalidEvent(event)) {
-                                        res.data.events.event.splice(i, 1);
-                                        i--;
-                                    }
-                                    else if (res.data.events.event[i].image == null) {
-                                        res.data.events.event[i].image = { medium: { url: notAvailableImg } }
-                                    } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
-                                        res.data.events.event[i].image.medium.url = notAvailableImg;
+                $scope.planCats.$loaded().then(function(planCatsref) {
+                    for (var i = pageIndex; i < $scope.dayEvent.events.length; i++) {
+                        for (var j = eventIndex; j < $scope.dayEvent.events[i].length; j++) {
+                            var flag = false;
+                            for (var k = 0; k < $scope.dayEvent.events[i][j].categories.category.length; k++) {
+                                for (var l = 0; l < $scope.planCats.length; l++) {
+                                    if ($scope.dayEvent.events[i][j].categories.category[k].id === planCatsref[l].category) {
+                                        flag = true;
+                                        break;
                                     }
                                 }
-                                $scope.dayEvent.events[pageIndex] = res.data.events.event;
-                                // for (var i=0; i<$scope.dayEvent.events[pageIndex].length; i++) {
-                                    // if $scope.dayEvent.events[pageIndex]
-                                // }
-                                
-                                $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
-                                    console.log('it worked!');
-                                    $scope.currentEvent = $scope.dayEvents[pageIndex][eventIndex];
-                                    $scope.loading = true;
-                                });
+                                if (flag) {
+                                    break;
+                                }
+                            }
+                            if (flag) {
+                                flag = false;
+                            }
+                            else {
+                                pageIndex = i;
+                                eventIndex = j;
+                                $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
+                                return;
+                            }
+                        }
+                    }
+
+                    console.log(pageIndex);
+                    if (pageIndex == pageLimit) {
+                        $state.go('waiting', { planid : $stateParams.planid });
+                    }
+                    else{
+                        $scope.loading = true;
+                        eventIndex = 0;
+                        pageIndex += 1;
+
+                        $http({
+                            method: 'GET',
+                            url: 'http://api.eventful.com/json/events/search',
+                            params: {
+                                app_key: eventfulKey,
+                                where: $scope.city,
+                                'date': $scope.date + '-' + $scope.date,
+                                'include': "tags,categories",
+                                sort_order: 'popularity',
+                                page_size: 100,
+                                page_number: pageIndex + 1
+                            }
+                        }).then(function (res) {
+                            var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
+                            for (var i=0; i<res.data.events.event.length; i++) {
+                                if (invalidEvent(event)) {
+                                    res.data.events.event.splice(i, 1);
+                                    i--;
+                                } else if (res.data.events.event[i].image == null) {
+                                    res.data.events.event[i].image = { medium: { url: notAvailableImg } }
+                                } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
+                                    res.data.events.event[i].image.medium.url = notAvailableImg;
+                                }
+                            }
+
+                            $scope.dayEvent.events[pageIndex] = res.data.events.event;
+                            $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
+                                $scope.loading = false;
+                                console.log('it worked!');
+                                getNextPageAndEventIndex();
                             });
-                        }
+                        });
                     }
                 });
             });
+        } 
+
+        $scope.swipe = function(right) {
+            $scope.Events.$loaded().then(function(eventsref) {
+                $scope.planEvents.$loaded().then(function(planEventsref) {
+                    $scope.planCats.$loaded().then(function(planCatsref) {
+
+                        var planEventID = $scope.currentEvent.id;
+                        var planEventCat = $scope.currentEvent.categories.category;
+                        var planEvent;
+
+                        for (var i = 0; i < planEventsref.length; i++) {
+                            if (planEventsref[i].eventID === planEventID)
+                                planEvent = planEventsref[i];
+                        }
+
+                        if (!planEvent) {
+                            if (right) {
+                                planEvent = {eventID: planEventID, likes: 1, dislikes: 0};
+                            }
+                            else {
+                                planEvent = {eventID: planEventID, likes: 0, dislikes: 1};
+                            }
+                            $scope.planEvents.$add(planEvent);
+                        }
+
+                        else {
+                            if (right) {
+                                planEvent.likes += 1;
+                            }
+                            else {
+                                planEvent.dislikes += 1;
+                            }
+                            $scope.planEvents.$save(planEvent).then(function(updateRef) {
+                            });
+                        }
+
+                        if(!right) {
+                            for (var i = 0; i < planEventCat.length; i++) {
+                                if (planEventCat[i].id in categoriesCount) {
+                                    categoriesCount[planEventCat[i].id].count += 1
+                                    if (categoriesCount[planEventCat[i].id].count >= 5) {
+                                        console.log('The mystical parrot of paradise');
+                                        $scope.planCats.$add({category: planEventCat[i].id });
+                                    }
+                                }
+                            }
+                        }
+
+                        if (planEvent.likes >= $scope.numSwipes) {
+                            console.log('got here');
+                            $scope.success.$add({event: $scope.currentEvent});
+                        }
+
+                        else {
+                            eventIndex += 1;
+                            getNextPageAndEventIndex();
+                        }
+                    });
+                });
+            });
         };
-
-        // TODO user $watch on PlanID for success object being added (all clients will redirect to success screen)
-
-        // TODO add angular material swipe
-
-        // TODO sass Styling
-
-        // TODO say you're out of events at 100
-        // TODO add page 2 (more than first 100)
-
-        // TODO Query only events that have image (not the hot air balloon)
-        // TODO Why is eventful leaving out image field (no event defualt with balloons)
-
-        // TODO when matthew finds his precious categories
-        // function getNextIndex() {
-        //     var i = 0;
-        //     while (i < $scope.dayEvents.length && $scope.planCats.indexOf($scope.dayEvents[i].)) {
-        //         i++;
-        //     }
-        // }
     });

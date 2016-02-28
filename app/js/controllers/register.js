@@ -4,13 +4,17 @@
  * # MainCtrl
  */
 angular.module('Planz')
-    .controller('RegisterCtrl', function ($scope, $firebaseArray, $state, $http, eventfulKey, rootRef) {
+    .controller('RegisterCtrl', function ($scope, $firebaseArray, $state, $http, $filter, eventfulKey, rootRef) {
         $scope.Planz = $firebaseArray(rootRef.child('Planz'));
 
         $scope.city = 'Vancouver';
         $scope.date = new Date();
-        $scope.time = moment();
-                
+        $scope.time = moment().format('LT');
+
+        $scope.$watch('time', function() {
+            $scope.timeChange = moment(new Date($scope.time));
+        });
+
         $scope.loading = false;
         
         function invalidEvent(event) {
@@ -72,7 +76,7 @@ angular.module('Planz')
             var plan = {
                 city: $scope.city,
                 date: getDateEventfulFormat(),
-                time: $scope.time.format('LT'),
+                time: moment(new Date($scope.time.toString())).format('LT'),
                 numSwipes: $scope.numSwipes
             };
 
