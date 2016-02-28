@@ -25,7 +25,12 @@ angular.module('Planz')
             .state('success', {
                 url: '/success/:planid',
                 templateUrl: 'views/success.html'
+            })
+            .state('waiting', {
+                url: '/waiting/:planid',
+                templateUrl: 'views/waiting.html'
             });
+
 
         $urlRouterProvider.otherwise('/');
     });

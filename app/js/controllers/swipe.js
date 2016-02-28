@@ -9,6 +9,7 @@ angular.module('Planz')
         
         var eventIndex = 0;
         var pageIndex = 0;
+        var pageLimit = 3;
 
         var categoriesCount = {
             music: {'count': 0},
@@ -46,6 +47,7 @@ angular.module('Planz')
         $scope.plan.$loaded().then(function (planref) {
             $scope.date = planref.date;
             $scope.numSwipes = planref.numSwipes;
+            $scope.city = planref.city;
 
             $scope.success = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('success'))
             $scope.success.$loaded().then(function(planEventsref) {
@@ -70,10 +72,10 @@ angular.module('Planz')
                             for (var i = 0; i < eventsref.length; i++) {
                                 if (eventsref[i].date === $scope.date) {
                                     $scope.dayEvent = eventsref[i];
+                                    getNextPageAndEventIndex();
+                                    break;
                                 }
                             }
-
-                            $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
                         });
                     });
                 });
@@ -81,21 +83,26 @@ angular.module('Planz')
         });
 
         function getNextPageAndEventIndex() {
+            $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
             $scope.Events.$loaded().then(function(eventsref) {
+
+                for (var i = 0; i < eventsref.length; i++) {
+                    if (eventsref[i].date === $scope.date) {
+                        $scope.dayEvent = eventsref[i];
+                    }
+                }
+
                 $scope.planCats.$loaded().then(function(planCatsref) {
                     for (var i = pageIndex; i < $scope.dayEvent.events.length; i++) {
-                        console.log('1');
                         for (var j = eventIndex; j < $scope.dayEvent.events[i].length; j++) {
-                            console.log('2');
                             var flag = false;
                             for (var k = 0; k < $scope.dayEvent.events[i][j].categories.category.length; k++) {
-                                console.log('3');
-                                for (var l = 0; l < planCatsref.length; l++) {
-                                    console.log('4');
-                                    if ($scope.dayEvent.events[i][j].categories.category[k] === planCatsref[l].category) {
+                                for (var l = 0; l < $scope.planCats.length; l++) {
+                                    if ($scope.dayEvent.events[i][j].categories.category[k].id === planCatsref[l].category) {
                                         flag = true;
                                         break;
                                     }
+                                }
                                 if (flag) {
                                     break;
                                 }
@@ -109,43 +116,49 @@ angular.module('Planz')
                                 $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
                                 return;
                             }
-                            }
                         }
                     }
 
-                    $scope.loading = true;
-                    eventIndex = 0;
-                    pageIndex += 1;
+                    console.log(pageIndex);
+                    if (pageIndex == pageLimit) {
+                        $state.go('waiting', { planid : $stateParams.planid });
+                    }
 
-                    $http({
-                        method: 'GET',
-                        url: 'http://api.eventful.com/json/events/search',
-                        params: {
-                            app_key: eventfulKey,
-                            where: $scope.city,
-                            date: $scope.date + '-' + $scope.date,
-                            sort_order: 'popularity',
-                            page_size: 100,
-                            page_number: pageIndex + 1
-                        }
-                    }).then(function (res) {
-                        var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
-                        for (var i=0; i<res.data.events.event.length; i++) {
-                            if (res.data.events.event[i].image == null) {
-                                res.data.events.event[i].image = { medium: { url: notAvailableImg } }
-                            } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
-                                res.data.events.event[i].image.medium.url = notAvailableImg;
+                    else{
+                        $scope.loading = true;
+                        eventIndex = 0;
+                        pageIndex += 1;
+
+                        $http({
+                            method: 'GET',
+                            url: 'http://api.eventful.com/json/events/search',
+                            params: {
+                                app_key: eventfulKey,
+                                where: $scope.city,
+                                'date': $scope.date + '-' + $scope.date,
+                                'include': "tags,categories",
+                                sort_order: 'popularity',
+                                page_size: 100,
+                                page_number: pageIndex + 1
                             }
-                        }
+                        }).then(function (res) {
+                            var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
+                            for (var i=0; i<res.data.events.event.length; i++) {
+                                if (res.data.events.event[i].image == null) {
+                                    res.data.events.event[i].image = { medium: { url: notAvailableImg } }
+                                } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
+                                    res.data.events.event[i].image.medium.url = notAvailableImg;
+                                }
+                            }
 
-                        $scope.dayEvent.events[pageIndex] = res.data.events.event;
-                        $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
-                            $scope.loading = false;
-                            console.log('it worked!');
-                            console.log($scope.dayEvent.events.length);
-                            getNextPageAndEventIndex();
+                            $scope.dayEvent.events[pageIndex] = res.data.events.event;
+                            $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
+                                $scope.loading = false;
+                                console.log('it worked!');
+                                getNextPageAndEventIndex();
+                            });
                         });
-                    });
+                    }
                 });
             });
         } 
@@ -182,7 +195,6 @@ angular.module('Planz')
                                 planEvent.dislikes += 1;
                             }
                             $scope.planEvents.$save(planEvent).then(function(updateRef) {
-                                console.log('it did someting');
                             });
                         }
 
@@ -190,7 +202,6 @@ angular.module('Planz')
                             for (var i = 0; i < planEventCat.length; i++) {
                                 if (planEventCat[i].id in categoriesCount) {
                                     categoriesCount[planEventCat[i].id].count += 1
-                                    console.log(categoriesCount[planEventCat[i].id].count);
                                     if (categoriesCount[planEventCat[i].id].count >= 5) {
                                         console.log('The mystical parrot of paradise');
                                         $scope.planCats.$add({category: planEventCat[i].id });
@@ -212,47 +223,4 @@ angular.module('Planz')
                 });
             });
         };
-
-
-
-                        // else {
-                        //     eventIndex += 1;
-                        //     if (eventIndex < $scope.dayEvent.events[pageIndex].length) {
-                        //         $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
-                        //     } 
-                        //     else {
-                        //         eventIndex = 0;
-                        //         pageIndex += 1;
-                        //         $http({
-                        //             method: 'GET',
-                        //             url: 'http://api.eventful.com/json/events/search',
-                        //             params: {
-                        //                 app_key: eventfulKey,
-                        //                 where: $scope.city,
-                        //                 date: $scope.date + '-' + $scope.date,
-                        //                 sort_order: 'popularity',
-                        //                 page_size: 100,
-                        //                 page_number: pageIndex + 1
-                        //             }
-                        //         }).then(function (res) {
-                        //             $scope.dayEvent.events[pageIndex] = res.data.events.event;
-                        //             $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
-                        //                 console.log('it worked!');
-                        //                 $scope.currentEvent = $scope.dayEvents[pageIndex][eventIndex];
-                        //             });
-                        //         });
-                        //     }
-                        // }
-
-        // TODO add page 2 (more than first 100)
-
-        // TODO Query only events that have image (not the hot air balloon)
-
-        // TODO when matthew finds his precious categories
-        // function getNextIndex() {
-        //     var i = 0;
-        //     while (i < $scope.dayEvents.length && $scope.planCats.indexOf($scope.dayEvents[i].)) {
-        //         i++;
-        //     }
-        // }
     });
