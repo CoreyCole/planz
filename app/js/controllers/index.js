@@ -23,8 +23,8 @@ angular.module('Planz')
         $scope.register = function() {
             var plan = {
                 city: $scope.city,
-                date: $scope.date,
-                time: $scope.time,
+                date: getDateEventfulFormat(),
+                time: $scope.time.format('LT'),
                 numSwipes: $scope.numSwipes
             };
 
@@ -93,7 +93,7 @@ angular.module('Planz')
                 params: {
                     app_key: eventfulKey,
                     where: $scope.city,
-                    date: $scope.getDate() + '-' + $scope.getDate(),
+                    date: getDateEventfulFormat() + '-' + getDateEventfulFormat(),
                     sort_order: 'popularity',
                     page_size: 100,
                     page_number: curPage
