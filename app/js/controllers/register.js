@@ -34,10 +34,11 @@ angular.module('Planz')
                         params: {
                             app_key: eventfulKey,
                             where: $scope.city,
-                            date: getDateEventfulFormat() + '-' + getDateEventfulFormat(),
+                            'date': getDateEventfulFormat() + '-' + getDateEventfulFormat(),
+                            'include': "tags,categories",
                             sort_order: 'popularity',
                             page_size: 100,
-                            page_number: 1
+                            page_number: 1,
                         }
                     }).then(function (res) {
                         console.log(res.data.events.event[1]);
@@ -59,7 +60,8 @@ angular.module('Planz')
 
         function getDateEventfulFormat() {
             var year = $scope.date.getFullYear().toString();
-            var month = $scope.date.getMonth();
+            // getMonth returns 0 based month: [0,11]
+            var month = $scope.date.getMonth() + 1;
             if (month < 10) {
                 month = "0" + month.toString();
             } else {
