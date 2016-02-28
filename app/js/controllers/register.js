@@ -65,8 +65,8 @@ angular.module('Planz')
             var eventfulHour = eventfulTime.substring(11,13);
             var eventfulMinute = eventfulTime.substring(14,16);
             
-            if (eventfulHour < hour) {
-                return false;
+            if (eventfulHour > hour) {
+                return true;
             }
             
             else return eventfulMinute >= minute;

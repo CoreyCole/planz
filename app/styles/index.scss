@@ -1,4 +1,5 @@
 $margin-large: 100px;
+$margin-small: 10px;
 $large-button-font-size: 25px;
 $large-button-padding: 5px 10px;
 
@@ -36,10 +37,21 @@ $large-button-padding: 5px 10px;
 .start {
     h1 {
         text-align: center;
+        position: relative;
+        z-index: 21;
+    }
+
+    p {
+        font-size: 16px;
     }
 
     .stuff {
         text-align: center;
+    }
+
+    .stuff {
+        position: relative;
+        z-index: 21;
     }
 }
 
@@ -50,16 +62,28 @@ $large-button-padding: 5px 10px;
     }
 
     .buttons {
-        position: absolute;
-
         text-align: center;
 
-        .no {
+        .md-raised {
+            color: white;
+        }
+
+        #no {
             background-color: #FF2600;
         }
 
-        .yes {
+        #yes {
             background-color:#63DE9A;
+        }
+    }
+
+    footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+
+        .md-fab {
+            z-index: 10;
         }
     }
 }

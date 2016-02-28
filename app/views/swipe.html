@@ -15,12 +15,12 @@
             <p>Time: {{currentEvent.start_time}}</p>
         </md-card-content>
     </md-card>
-    <section layout="row" class="buttons" layout-sm="column" layout-align="center center" layout-wrap>
-        <md-button class="md-fab no" aria-label="swipe left" ng-click="swipe(false)">
+    <footer layout="row" class="buttons" layout-sm="column" layout-align="center center" layout-wrap>
+        <md-button id="no" class="md-fab md-raised" aria-label="swipe left" ng-click="swipe(false)">
             <i class="fa fa-times"></i>
         </md-button>
-        <md-button class="md-fab yes" aria-label="swipe right" ng-click="swipe(true)">
+        <md-button id="yes" class="md-fab md-raised" aria-label="swipe right" ng-click="swipe(true)">
             <i class="fa fa-check"></i>
         </md-button>
-    </section>
+    </footer>
 </div>
