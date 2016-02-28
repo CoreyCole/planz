@@ -165,9 +165,17 @@ angular.module('Planz')
             });
         };
 
+        // TODO user $watch on PlanID for success object being added (all clients will redirect to success screen)
+
+        // TODO add angular material swipe
+
+        // TODO sass Styling
+
+        // TODO say you're out of events at 100
         // TODO add page 2 (more than first 100)
 
         // TODO Query only events that have image (not the hot air balloon)
+        // TODO Why is eventful leaving out image field (no event defualt with balloons)
 
         // TODO when matthew finds his precious categories
         // function getNextIndex() {
