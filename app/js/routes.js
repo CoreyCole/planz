@@ -8,7 +8,7 @@ angular.module('Planz')
         $stateProvider
             .state('main', {
                 url: '/',
-                templateUrl: 'views/main.html'
+                templateUrl: 'views/start.html'
             });
 
         $urlRouterProvider.otherwise('/');
