@@ -6,7 +6,7 @@
 angular.module('Planz')
     .controller('RegisterCtrl', function ($scope, $firebaseArray, $state, $http, $filter, eventfulKey, rootRef) {
         $scope.Planz = $firebaseArray(rootRef.child('Planz'));
-
+        $scope.loading = false;
         $scope.city = 'Vancouver';
         $scope.date = new Date();
         $scope.time = moment().format('LT');
@@ -73,6 +73,7 @@ angular.module('Planz')
         }
 
         $scope.register = function() {
+            $scope.loading = true;
             var plan = {
                 city: $scope.city,
                 date: getDateEventfulFormat(),
