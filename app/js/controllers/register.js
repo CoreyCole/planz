@@ -10,7 +10,6 @@ angular.module('Planz')
         $scope.city = 'Vancouver';
         $scope.date = new Date();
         $scope.time = moment();
-        $scope.numSwipes;
 
         $scope.register = function() {
             var plan = {
