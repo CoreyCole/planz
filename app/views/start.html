@@ -1,3 +1,12 @@
 <div class="start" ng-controller="StartCtrl">
-
+    <p>Event created!</p>
+    <div><p>Share URL:</p>
+        <textarea id="shareURL">{{shareUrl}}</textarea>
+        <md-button class="md-button md-raised md-primary" ng-click="copyText()">
+        Copy URL
+        </md-button>
+    </div>
+    <md-button class="md-button md-raised md-primary" ui-sref="swipe({ planid : planid })">
+        Start Swiping!
+    </md-button>
 </div>
