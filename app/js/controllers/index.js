@@ -4,9 +4,10 @@
  * # MainCtrl
  */
 angular.module('Planz')
-    .controller('IndexCtrl', function ($scope,  $firebaseObject, eventfulKey, rootRef) {
+    .controller('IndexCtrl', function ($scope,  $firebaseObject, $firebaseArray, $state, eventfulKey, rootRef) {
         // download the data into a local object
         var syncObject = $firebaseObject(rootRef);
+        $scope.Planz = $firebaseArray(rootRef.child('Planz'));
 
         // synchronize the object with a three-way data binding
         // click on `index.html` above to see it used in the DOM!
@@ -16,8 +17,21 @@ angular.module('Planz')
         
         $scope.city = 'Vancouver';
         $scope.date = new Date();
-        $scope.time = '';
-        $scope.numSwipes = 0;
+        $scope.time = moment();
+        $scope.numSwipes;
+
+        $scope.register = function() {
+            var plan = {
+                city: $scope.city,
+                date: $scope.date,
+                time: $scope.time,
+                numSwipes: $scope.numSwipes
+            };
+
+            $scope.Planz.$add(plan).then(function(ref) {
+                $state.go('start', { planid : ref.key() });
+            });
+        };
         
         var curPage = 1;
         var maxCount = 5;

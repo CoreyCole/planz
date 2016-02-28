@@ -3,17 +3,17 @@
         <div>
             <md-input-container class="md-block">
                 <label>City</label>
-                <input ng-model="plan.city" type="text" ng-required="true">
+                <input ng-model="city" type="text" ng-required="true">
             </md-input-container>
             <md-input-container class="md-block">
                 <label>Number of People</label>
-                <input ng-model="plan.numPeople" type="text" ng-required="true">
+                <input ng-model="numSwipes" type="text" ng-required="true">
             </md-input-container>
-            <md-datepicker ng-model="plan.date" md-placeholder="Plan date"></md-datepicker>
+            <md-datepicker ng-model="date" md-placeholder="Plan date"></md-datepicker>
             <md-input-container class="md-block">
                 <label>Free time starts</label>
                 <input mdc-datetime-picker="" date="false" time="true" type="text" id="time" short-time="true"
-                       placeholder="Time" format="hh:mm a" ng-model="plan.startTime" class=" md-input">
+                       placeholder="Time" format="hh:mm a" ng-model="time" class=" md-input">
             </md-input-container>
             <div class="register-btn-div">
                 <md-button class="md-button md-raised md-primary register-btn" ng-click="register()" aria-label="remove item">
