@@ -70,6 +70,7 @@ angular.module('Planz')
                                     $scope.dayEvent = eventsref[i];
                                 }
                             }
+
                             $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
                         });
                     });
@@ -77,77 +78,156 @@ angular.module('Planz')
             });
         });
 
+        function getNextPageAndEventIndex() {
+            $scope.Events.$loaded().then(function(eventsref) {
+                $scope.planCats.$loaded().then(function(planCatsref) {
+                    for (var i = pageIndex; i < $scope.dayEvent.events.length; i++) {
+                        console.log('1');
+                        for (var j = eventIndex; j < $scope.dayEvent.events[i].length; j++) {
+                            console.log('2');
+                            var flag = false;
+                            for (var k = 0; k < $scope.dayEvent.events[i][j].categories.category.length; k++) {
+                                console.log('3');
+                                for (var l = 0; l < planCatsref.length; l++) {
+                                    console.log('4');
+                                    if ($scope.dayEvent.events[i][j].categories.category[k] === planCatsref[l].category) {
+                                        flag = true;
+                                        break;
+                                    }
+                                if (flag) {
+                                    break;
+                                }
+                            }
+                            if (flag) {
+                                flag = false;
+                            }
+                            else {
+                                pageIndex = i;
+                                eventIndex = j;
+                                $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
+                                return;
+                            }
+                            }
+                        }
+                    }
+                    eventIndex = 0;
+                    pageIndex += 1;
+                    $http({
+                        method: 'GET',
+                        url: 'http://api.eventful.com/json/events/search',
+                        params: {
+                            app_key: eventfulKey,
+                            where: $scope.city,
+                            date: $scope.date + '-' + $scope.date,
+                            sort_order: 'popularity',
+                            page_size: 100,
+                            page_number: pageIndex + 1
+                        }
+                    }).then(function (res) {
+                        $scope.dayEvent.events[pageIndex] = res.data.events.event;
+                        $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
+                            console.log('it worked!');
+                            console.log($scope.dayEvent.events.length);
+                            getNextPageAndEventIndex();
+                        });
+                    });
+                });
+            });
+        } 
+
         $scope.swipe = function(right) {
             $scope.Events.$loaded().then(function(eventsref) {
                 $scope.planEvents.$loaded().then(function(planEventsref) {
+                    $scope.planCats.$loaded().then(function(planCatsref) {
 
-                    var planEventID = $scope.currentEvent.id;
-                    var planEventCat = $scope.currentEvent.categories.category;
-                    var planEvent;
+                        var planEventID = $scope.currentEvent.id;
+                        var planEventCat = $scope.currentEvent.categories.category;
+                        var planEvent;
 
-                    for (var i = 0; i < planEventsref.length; i++) {
-                        if (planEventsref[i].eventID === planEventID)
-                            planEvent = planEventsref[i];
-                    }
-
-                    if (!planEvent) {
-                        if (right) {
-                            planEvent = {eventID: planEventID, likes: 1, dislikes: 0};
+                        for (var i = 0; i < planEventsref.length; i++) {
+                            if (planEventsref[i].eventID === planEventID)
+                                planEvent = planEventsref[i];
                         }
+
+                        if (!planEvent) {
+                            if (right) {
+                                planEvent = {eventID: planEventID, likes: 1, dislikes: 0};
+                            }
+                            else {
+                                planEvent = {eventID: planEventID, likes: 0, dislikes: 1};
+                            }
+                            $scope.planEvents.$add(planEvent);
+                        }
+
                         else {
-                            planEvent = {eventID: planEventID, likes: 0, dislikes: 1};
-                        }
-                        $scope.planEvents.$add(planEvent);
-                    }
-
-                    else {
-                        if (right) {
-                            planEvent.likes += 1;
-                        }
-                        else {
-                            planEvent.dislikes += 1;
-                        }
-                        $scope.planEvents.$save(planEvent).then(function(updateRef) {
-                            console.log('it did someting');
-                        });
-                    }
-
-                    if (planEvent.likes >= $scope.numSwipes) {
-                        console.log('got here');
-                        $scope.success.$add({event: $scope.currentEvent});
-                    }
-
-                    else {
-                        eventIndex += 1;
-                        if (eventIndex < $scope.dayEvent.events[pageIndex].length) {
-                            $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
-                        } 
-                        else {
-                            eventIndex = 0;
-                            pageIndex += 1;
-                            $http({
-                                method: 'GET',
-                                url: 'http://api.eventful.com/json/events/search',
-                                params: {
-                                    app_key: eventfulKey,
-                                    where: $scope.city,
-                                    date: $scope.date + '-' + $scope.date,
-                                    sort_order: 'popularity',
-                                    page_size: 100,
-                                    page_number: pageIndex + 1
-                                }
-                            }).then(function (res) {
-                                $scope.dayEvent.events[pageIndex] = res.data.events.event;
-                                $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
-                                    console.log('it worked!');
-                                    $scope.currentEvent = $scope.dayEvents[pageIndex][eventIndex];
-                                });
+                            if (right) {
+                                planEvent.likes += 1;
+                            }
+                            else {
+                                planEvent.dislikes += 1;
+                            }
+                            $scope.planEvents.$save(planEvent).then(function(updateRef) {
+                                console.log('it did someting');
                             });
                         }
-                    }
+
+                        if(!right) {
+                            for (var i = 0; i < planEventCat.length; i++) {
+                                if (planEventCat[i].id in categoriesCount) {
+                                    categoriesCount[planEventCat[i].id].count += 1
+                                    console.log(categoriesCount[planEventCat[i].id].count);
+                                    if (categoriesCount[planEventCat[i].id].count >= 5) {
+                                        console.log('The mystical parrot of paradise');
+                                        $scope.planCats.$add({category: planEventCat[i].id });
+                                    }
+                                }
+                            }
+                        }
+
+                        if (planEvent.likes >= $scope.numSwipes) {
+                            console.log('got here');
+                            $scope.success.$add({event: $scope.currentEvent});
+                        }
+
+                        else {
+                            eventIndex += 1;
+                            getNextPageAndEventIndex();
+                        }
+                    });
                 });
             });
         };
+
+
+
+                        // else {
+                        //     eventIndex += 1;
+                        //     if (eventIndex < $scope.dayEvent.events[pageIndex].length) {
+                        //         $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
+                        //     } 
+                        //     else {
+                        //         eventIndex = 0;
+                        //         pageIndex += 1;
+                        //         $http({
+                        //             method: 'GET',
+                        //             url: 'http://api.eventful.com/json/events/search',
+                        //             params: {
+                        //                 app_key: eventfulKey,
+                        //                 where: $scope.city,
+                        //                 date: $scope.date + '-' + $scope.date,
+                        //                 sort_order: 'popularity',
+                        //                 page_size: 100,
+                        //                 page_number: pageIndex + 1
+                        //             }
+                        //         }).then(function (res) {
+                        //             $scope.dayEvent.events[pageIndex] = res.data.events.event;
+                        //             $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
+                        //                 console.log('it worked!');
+                        //                 $scope.currentEvent = $scope.dayEvents[pageIndex][eventIndex];
+                        //             });
+                        //         });
+                        //     }
+                        // }
 
         // TODO add page 2 (more than first 100)
 
