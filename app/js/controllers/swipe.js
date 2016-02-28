@@ -4,7 +4,13 @@
  * # MainCtrl
  */
 angular.module('Planz')
-    .controller('SwipeCtrl', function ($scope) {
+    .controller('SwipeCtrl', function ($scope, $firebaseObject, $stateParams, rootRef) {
+        $scope.Plan = $firebaseObject(rootRef.child('Planz').child($stateParams.planid));
+
+        $scope.Plan.$loaded().then(function(ref) {
+            console.dir(ref);
+        });
+
         $scope.categories = {
             music: {'count': 0},
             conference: {'count': 0},
