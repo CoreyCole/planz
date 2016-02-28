@@ -1,3 +1,7 @@
-<div class="start" ng-controller="IndexCtrl">
-
+<div class="start" ng-controller="StartCtrl">
+    <p>Event created!</p>
+    <p>Share URL: {{shareUrl}}</p>
+    <md-button class="md-button md-raised md-primary" ui-sref="swipe({ planid : planid })">
+        Start Swiping!
+    </md-button>
 </div>
