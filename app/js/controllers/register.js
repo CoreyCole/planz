@@ -16,9 +16,7 @@ angular.module('Planz')
                 city: $scope.city,
                 date: getDateEventfulFormat(),
                 time: $scope.time.format('LT'),
-                numSwipes: $scope.numSwipes,
-                hideCategories: [],
-                eventData: []
+                numSwipes: $scope.numSwipes
             };
 
             $scope.Events = $firebaseArray(rootRef.child('Events'));
