@@ -129,7 +129,19 @@ angular.module('Planz')
                                     page_number: pageIndex + 1
                                 }
                             }).then(function (res) {
+                                var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
+                                for (var i=0; i<res.data.events.event.length; i++) {
+                                    if (res.data.events.event[i].image == null) {
+                                        res.data.events.event[i].image = { medium: { url: notAvailableImg } }
+                                    } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
+                                        res.data.events.event[i].image.medium.url = notAvailableImg;
+                                    }
+                                }
                                 $scope.dayEvent.events[pageIndex] = res.data.events.event;
+                                // for (var i=0; i<$scope.dayEvent.events[pageIndex].length; i++) {
+                                    // if $scope.dayEvent.events[pageIndex]
+                                // }
+                                
                                 $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
                                     console.log('it worked!');
                                     $scope.currentEvent = $scope.dayEvents[pageIndex][eventIndex];
