@@ -1,12 +1,14 @@
 <div class="register" ng-controller="RegisterCtrl">
     <div class="background-image-container">
-        <img class="background-image" src="http://www.technobuffalo.com/wp-content/uploads/2015/11/concert-crowd.jpg">
+        <img class="background-image" src="img/concert-crowd.jpg">
     </div>
     <div class="overlay" ng-show="loading">
-        <img src="http://media.giphy.com/media/JBeu9q9LC1Kve/giphy.gif">
+        <div layout="row" layout-sm="column" layout-align="space-around">
+            <md-progress-circular class="prog" md-mode="indeterminate"></md-progress-circular>
+        </div>
         <div class="loading_text"><b>Loading Data...</b></div>
     </div>
-    <md-content class="register-input transparent-background" layout layout-padding>
+    <md-content class="register-input transparent-background" layout layout-padding ng-show="!loading">
         <div>
             <md-input-container class="md-block">
                 <label>City</label>
