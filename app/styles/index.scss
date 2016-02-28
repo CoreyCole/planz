@@ -17,3 +17,24 @@
 .swipe {
 
 }
+
+$load-width: 100px;
+$banner-height: 64px;
+
+.overlay {
+    position: absolute;
+    z-index: 21;
+    width: 100%;
+    height: calc(100% - #{$banner-height});
+    background: rgba(255,255,255,0.5);
+    
+    img {
+        width: $load-width;
+        
+        position: absolute;
+        left: calc((100% - #{$load-width}) / 2);
+        top: calc(50% - #{$load-width});
+        
+        
+    }
+}

@@ -4,10 +4,13 @@
  * # MainCtrl
  */
 angular.module('Planz')
-    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $stateParams, $http, eventfulKey, rootRef) {
+    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $state, $stateParams, $http, eventfulKey, rootRef) {
+        $scope.loading = false;
+        
         var eventIndex = 0;
+        var pageIndex = 0;
 
-        var categories = {
+        var categoriesCount = {
             music: {'count': 0},
             conference: {'count': 0},
             comedy: {'count': 0},
@@ -42,24 +45,35 @@ angular.module('Planz')
         $scope.plan = $firebaseObject(rootRef.child('Planz').child($stateParams.planid));
         $scope.plan.$loaded().then(function (planref) {
             $scope.date = planref.date;
+            $scope.numSwipes = planref.numSwipes;
 
-            $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
-            $scope.planEvents.$loaded().then(function(planEventsref) {
+            $scope.success = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('success'))
+            $scope.success.$loaded().then(function(planEventsref) {
 
-                $scope.planCats = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('categories'));
-                $scope.planCats.$loaded().then(function(planCatsref) {
+                if (planEventsref.length > 0 ) {
+                    $state.go('success', { planid : $stateParams.planid });
+                }
 
-                    $scope.Events = $firebaseArray(rootRef.child('Events'));
-                    $scope.Events.$loaded().then(function(eventsref) {
+                $scope.success.$watch(function() {
+                    $state.go('success', { planid : $stateParams.planid });
+                });
 
-                        for (var i = 0; i < eventsref.length; i++) {
-                            if (eventsref[i].date === $scope.date) {
-                                $scope.dayEvents = eventsref[i].events;
-                                $scope.currPage = eventsref[i].page;
-                                $scope.firebaseEventID = eventsref[i].$id;
+                $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
+                $scope.planEvents.$loaded().then(function(planEventsref) {
+
+                    $scope.planCats = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('categories'));
+                    $scope.planCats.$loaded().then(function(planCatsref) {
+
+                        $scope.Events = $firebaseArray(rootRef.child('Events'));
+                        $scope.Events.$loaded().then(function(eventsref) {
+
+                            for (var i = 0; i < eventsref.length; i++) {
+                                if (eventsref[i].date === $scope.date) {
+                                    $scope.dayEvent = eventsref[i];
+                                }
                             }
-                        }
-                        $scope.currentEvent = $scope.dayEvents[eventIndex];
+                            $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
+                        });
                     });
                 });
             });
@@ -70,7 +84,9 @@ angular.module('Planz')
                 $scope.planEvents.$loaded().then(function(planEventsref) {
 
                     var planEventID = $scope.currentEvent.id;
+                    var planEventCat = $scope.currentEvent.categories.category;
                     var planEvent;
+
                     for (var i = 0; i < planEventsref.length; i++) {
                         if (planEventsref[i].eventID === planEventID)
                             planEvent = planEventsref[i];
@@ -78,11 +94,12 @@ angular.module('Planz')
 
                     if (!planEvent) {
                         if (right) {
-                            $scope.planEvents.$add({ eventID: planEventID, likes: 1, dislikes: 0});
+                            planEvent = {eventID: planEventID, likes: 1, dislikes: 0};
                         }
                         else {
-                            $scope.planEvents.$add({ eventID: planEventID, likes: 0, dislikes: 1});
+                            planEvent = {eventID: planEventID, likes: 0, dislikes: 1};
                         }
+                        $scope.planEvents.$add(planEvent);
                     }
 
                     else {
@@ -97,30 +114,52 @@ angular.module('Planz')
                         });
                     }
 
-                    eventIndex += 1;
-                    if (eventIndex < $scope.dayEvents.length) {
-                        $scope.currentEvent = $scope.dayEvents[eventIndex];
-                    } else {
-                        $scope.currPage += 1;
-                        $http({
-                            method: 'GET',
-                            url: 'http://api.eventful.com/json/events/search',
-                            params: {
-                                app_key: eventfulKey,
-                                where: $scope.city,
-                                date: $scope.date + '-' + $scope.date,
-                                sort_order: 'popularity',
-                                page_size: 100,
-                                page_number: $scope.currPage
-                            }
-                        }).then(function (res) {
-                            var arr = res.data.events.event;
-                            for (var i = 0; i < arr.length; i++) {
-                                $scope.dayEvents.push( arr[i] );
-                            }
-                            console.log($scope.dayEvents.length);
-                        });
-                        $scope.currentEvent = $scope.dayEvents[eventIndex];
+                    if (planEvent.likes >= $scope.numSwipes) {
+                        console.log('got here');
+                        $scope.success.$add({event: $scope.currentEvent});
+                    }
+
+                    else {
+                        eventIndex += 1;
+                        if (eventIndex < $scope.dayEvent.events[pageIndex].length) {
+                            $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
+                        } 
+                        else {
+                            $scope.loading = true;
+                            eventIndex = 0;
+                            pageIndex += 1;
+                            $http({
+                                method: 'GET',
+                                url: 'http://api.eventful.com/json/events/search',
+                                params: {
+                                    app_key: eventfulKey,
+                                    where: $scope.city,
+                                    date: $scope.date + '-' + $scope.date,
+                                    sort_order: 'popularity',
+                                    page_size: 100,
+                                    page_number: pageIndex + 1
+                                }
+                            }).then(function (res) {
+                                var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
+                                for (var i=0; i<res.data.events.event.length; i++) {
+                                    if (res.data.events.event[i].image == null) {
+                                        res.data.events.event[i].image = { medium: { url: notAvailableImg } }
+                                    } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
+                                        res.data.events.event[i].image.medium.url = notAvailableImg;
+                                    }
+                                }
+                                $scope.dayEvent.events[pageIndex] = res.data.events.event;
+                                // for (var i=0; i<$scope.dayEvent.events[pageIndex].length; i++) {
+                                    // if $scope.dayEvent.events[pageIndex]
+                                // }
+                                
+                                $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
+                                    console.log('it worked!');
+                                    $scope.currentEvent = $scope.dayEvents[pageIndex][eventIndex];
+                                    $scope.loading = true;
+                                });
+                            });
+                        }
                     }
                 });
             });

@@ -10,6 +10,8 @@ angular.module('Planz')
         $scope.city = 'Vancouver';
         $scope.date = new Date();
         $scope.time = moment();
+                
+        $scope.loading = false;
 
         $scope.register = function() {
             var plan = {
@@ -21,6 +23,7 @@ angular.module('Planz')
 
             $scope.Events = $firebaseArray(rootRef.child('Events'));
             $scope.Events.$loaded().then(function(ref) {
+                $scope.loading = true;
                 var flag = false;
                 for (var i = 0; i < ref.length; i++) {
                     if (ref[i].date === getDateEventfulFormat())
@@ -34,24 +37,34 @@ angular.module('Planz')
                         params: {
                             app_key: eventfulKey,
                             where: $scope.city,
-                            date: getDateEventfulFormat() + '-' + getDateEventfulFormat(),
+                            'date': getDateEventfulFormat() + '-' + getDateEventfulFormat(),
+                            'include': "tags,categories",
                             sort_order: 'popularity',
                             page_size: 100,
-                            page_number: 1
+                            page_number: 1,
                         }
                     }).then(function (res) {
+                        var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
+                        for (var i=0; i<res.data.events.event.length; i++) {
+                            if (res.data.events.event[i].image == null) {
+                                res.data.events.event[i].image = { medium: { url: notAvailableImg } }
+                            } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
+                                res.data.events.event[i].image.medium.url = notAvailableImg;
+                            }
+                        }
                         $scope.Events.$add({
-                            events: res.data.events.event,
+                            events: [res.data.events.event],
                             date: getDateEventfulFormat(),
-                            page: 1
                         });
                         $scope.Planz.$add(plan).then(function(ref) {
                             $state.go('start', { planid : ref.key() });
+                            $scope.loading = false;
                         });
                     });
                 } else {
                     $scope.Planz.$add(plan).then(function(ref) {
                         $state.go('start', { planid : ref.key() });
+                        $scope.loading = false;
                     });
                 }
             });
@@ -59,7 +72,8 @@ angular.module('Planz')
 
         function getDateEventfulFormat() {
             var year = $scope.date.getFullYear().toString();
-            var month = $scope.date.getMonth();
+            // getMonth returns 0 based month: [0,11]
+            var month = $scope.date.getMonth() + 1;
             if (month < 10) {
                 month = "0" + month.toString();
             } else {
