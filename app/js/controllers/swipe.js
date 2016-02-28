@@ -74,13 +74,24 @@ angular.module('Planz')
                 eventfulDay = eventfulDay.substring(1, 2);
             }
             
+            var dateYear = $scope.date..substring(0, 4);
+            var dateMonth = $scope.date.substring(5, 7);
+            var dateDay = $scope.date.substring(8, 10);
+            
+            if (dateMonth.substring(0, 1) == "0") {
+                dateMonth = dateMonth.substring(1, 2);
+            }
+            if (dateDay.substring(0, 1) == "0") {
+                dateDay = dateDay.substring(1, 2);
+            }
+            
             var dateYear = $scope.date.getFullYear().toString();
             var dateMonth = ($scope.date.getMonth() + 1).toString();
             var dateDay = $scope.date.getDate().toString();
             
-            return $scope.date.getFullYear().toString() == eventfulYear &&
-                   ($scope.date.getMonth() + 1).toString() == eventfulMonth &&
-                   $scope.date.getDate().toString() == eventfulDay;
+            return dateYear == eventfulYear &&
+                   dateMonth.toString() == eventfulMonth &&
+                   dateDay.toString() == eventfulDay;
         }
         
         function eventLater(eventfulTime) {
