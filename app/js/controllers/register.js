@@ -6,7 +6,7 @@
 angular.module('Planz')
     .controller('RegisterCtrl', function ($scope, $firebaseArray, $state, $http, $filter, eventfulKey, rootRef) {
         $scope.Planz = $firebaseArray(rootRef.child('Planz'));
-
+        $scope.loading = false;
         $scope.city = 'Vancouver';
         $scope.date = new Date();
         $scope.time = moment().format('LT');
@@ -65,14 +65,15 @@ angular.module('Planz')
             var eventfulHour = eventfulTime.substring(11,13);
             var eventfulMinute = eventfulTime.substring(14,16);
             
-            if (eventfulHour < hour) {
-                return false;
+            if (eventfulHour > hour) {
+                return true;
             }
             
             else return eventfulMinute >= minute;
         }
 
         $scope.register = function() {
+            $scope.loading = true;
             var plan = {
                 city: $scope.city,
                 date: getDateEventfulFormat(),

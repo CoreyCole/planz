@@ -1,4 +1,5 @@
 $margin-large: 100px;
+$margin-small: 10px;
 $large-button-font-size: 25px;
 $large-button-padding: 5px 10px;
 
@@ -26,10 +27,18 @@ $large-button-padding: 5px 10px;
             padding: $large-button-padding;
         }
     }
+
+    .prog {
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
 
 .start {
-
+    .start-content {
+        position: relative;
+        z-index: 21;
+    }
 }
 
 .swipe {
