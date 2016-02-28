@@ -85,10 +85,6 @@ angular.module('Planz')
                 dateDay = dateDay.substring(1, 2);
             }
             
-            var dateYear = $scope.date.getFullYear().toString();
-            var dateMonth = ($scope.date.getMonth() + 1).toString();
-            var dateDay = $scope.date.getDate().toString();
-            
             return dateYear == eventfulYear &&
                    dateMonth.toString() == eventfulMonth &&
                    dateDay.toString() == eventfulDay;
