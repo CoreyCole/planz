@@ -8,7 +8,7 @@ angular.module('Planz')
         var eventIndex = 0;
         var pageIndex = 0;
 
-        var categories = {
+        var categoriesCount = {
             music: {'count': 0},
             conference: {'count': 0},
             comedy: {'count': 0},
@@ -47,7 +47,8 @@ angular.module('Planz')
 
             $scope.success = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('success'))
             $scope.success.$loaded().then(function(planEventsref) {
-                if ($scope.success) {
+
+                if (planEventsref.length > 0 ) {
                     $state.go('success', { planid : $stateParams.planid });
                 }
 
@@ -81,7 +82,9 @@ angular.module('Planz')
                 $scope.planEvents.$loaded().then(function(planEventsref) {
 
                     var planEventID = $scope.currentEvent.id;
+                    var planEventCat = $scope.currentEvent.categories.category;
                     var planEvent;
+
                     for (var i = 0; i < planEventsref.length; i++) {
                         if (planEventsref[i].eventID === planEventID)
                             planEvent = planEventsref[i];
@@ -110,6 +113,7 @@ angular.module('Planz')
                     }
 
                     if (planEvent.likes >= $scope.numSwipes) {
+                        console.log('got here');
                         $scope.success.$add({event: $scope.currentEvent});
                     }
 
