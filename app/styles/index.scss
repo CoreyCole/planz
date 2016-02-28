@@ -33,6 +33,25 @@ $large-button-padding: 5px 10px;
 }
 
 .swipe {
+    .md-headline {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .buttons {
+        position: absolute;
+
+        text-align: center;
+
+        .no {
+            background-color: #FF2600;
+        }
+
+        .yes {
+            background-color:#63DE9A;
+        }
+    }
+
 
 }
 
