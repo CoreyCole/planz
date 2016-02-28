@@ -47,6 +47,10 @@ angular.module('Planz')
 
             $scope.success = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('success'))
             $scope.success.$loaded().then(function(planEventsref) {
+                if ($scope.success) {
+                    $state.go('success', { planid : $stateParams.planid });
+                }
+
                 $scope.success.$watch(function() {
                     $state.go('success', { planid : $stateParams.planid });
                 });
