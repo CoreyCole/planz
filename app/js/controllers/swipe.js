@@ -74,7 +74,7 @@ angular.module('Planz')
                 eventfulDay = eventfulDay.substring(1, 2);
             }
             
-            var dateYear = $scope.date..substring(0, 4);
+            var dateYear = $scope.date.substring(0, 4);
             var dateMonth = $scope.date.substring(5, 7);
             var dateDay = $scope.date.substring(8, 10);
             
