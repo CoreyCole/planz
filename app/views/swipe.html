@@ -1,14 +1,22 @@
 <div class="swipe" ng-controller="SwipeCtrl">
     <md-card>
-        <img ng-src="{{currentEvent.imagePath}}" class="md-card-image" alt="event image">
+        <img ng-src="{{currentEvent.image.medium.url}}" class="md-card-image" alt="event image">
         <md-card-title>
             <md-card-title-text>
                 <span class="md-headline">{{currentEvent.title}}</span>
             </md-card-title-text>
         </md-card-title>
         <md-card-content>
-            <p>{{currentEvent.address}}</p>
-            <p>{{currentEvent.time}}</p>
+            <p>{{currentEvent.venue_address}}</p>
+            <p>{{currentEvent.start_time}}</p>
         </md-card-content>
     </md-card>
+    <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
+        <md-button class="md-fab" aria-label="Eat cake">
+            <i class="fa fa-times"></i>
+        </md-button>
+        <md-button class="md-fab md-primary" aria-label="Use Android">
+            <i class="fa fa-check"></i>
+        </md-button>
+    </section>
 </div>
