@@ -1,6 +1,12 @@
 <div class="register" ng-controller="RegisterCtrl">
-    <div class="overlay" ng-show="loading"><img src="http://media.giphy.com/media/JBeu9q9LC1Kve/giphy.gif"></div>
-    <md-content class="register-input" layout layout-padding>
+    <div class="background-image-container">
+        <img class="background-image" src="http://www.technobuffalo.com/wp-content/uploads/2015/11/concert-crowd.jpg">
+    </div>
+    <div class="overlay" ng-show="loading">
+        <img src="http://media.giphy.com/media/JBeu9q9LC1Kve/giphy.gif">
+        <div class="loading_text"><b>Loading Data...</b></div>
+    </div>
+    <md-content class="register-input transparent-background" layout layout-padding>
         <div>
             <md-input-container class="md-block">
                 <label>City</label>
@@ -10,7 +16,7 @@
                 <label>Number of People</label>
                 <input ng-model="numSwipes" type="number" ng-required="true">
             </md-input-container>
-            <md-datepicker ng-model="date" md-placeholder="Plan date"></md-datepicker>
+            <md-datepicker class="transparent-background" ng-model="date" md-placeholder="Plan date"></md-datepicker>
             <md-input-container class="md-block">
                 <label>Free time starts</label>
                 <input mdc-datetime-picker="" date="false" time="true" type="text" id="time" short-time="true"
