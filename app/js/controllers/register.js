@@ -41,10 +41,10 @@ angular.module('Planz')
                             page_number: 1,
                         }
                     }).then(function (res) {
+                        console.log(res.data.events.event[1]);
                         $scope.Events.$add({
-                            events: res.data.events.event,
+                            events: [res.data.events.event],
                             date: getDateEventfulFormat(),
-                            page: 1
                         });
                         $scope.Planz.$add(plan).then(function(ref) {
                             $state.go('start', { planid : ref.key() });
