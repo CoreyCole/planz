@@ -199,6 +199,8 @@ angular.module('Planz')
                         }).then(function (res) {
                             var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
                             for (var i=0; i<res.data.events.event.length; i++) {
+                                var event = res.data.events.event[i];
+                            
                                 if (invalidEvent(event)) {
                                     res.data.events.event.splice(i, 1);
                                     i--;
