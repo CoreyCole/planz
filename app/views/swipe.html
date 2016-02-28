@@ -1,6 +1,8 @@
 <div class="swipe" ng-controller="SwipeCtrl">
     <div class="overlay" ng-show="loading">
-        <img src="http://media.giphy.com/media/JBeu9q9LC1Kve/giphy.gif">
+        <div layout="row" layout-sm="column" layout-align="space-around">
+            <md-progress-circular class="prog" md-mode="indeterminate"></md-progress-circular>
+        </div>
         <div class="loading_text"><b>Loading Data...</b></div>
     </div>
     <md-card>
