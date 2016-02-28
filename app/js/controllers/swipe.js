@@ -74,13 +74,24 @@ angular.module('Planz')
                 eventfulDay = eventfulDay.substring(1, 2);
             }
             
+            var dateYear = $scope.date..substring(0, 4);
+            var dateMonth = $scope.date.substring(5, 7);
+            var dateDay = $scope.date.substring(8, 10);
+            
+            if (dateMonth.substring(0, 1) == "0") {
+                dateMonth = dateMonth.substring(1, 2);
+            }
+            if (dateDay.substring(0, 1) == "0") {
+                dateDay = dateDay.substring(1, 2);
+            }
+            
             var dateYear = $scope.date.getFullYear().toString();
             var dateMonth = ($scope.date.getMonth() + 1).toString();
             var dateDay = $scope.date.getDate().toString();
             
-            return $scope.date.getFullYear().toString() == eventfulYear &&
-                   ($scope.date.getMonth() + 1).toString() == eventfulMonth &&
-                   $scope.date.getDate().toString() == eventfulDay;
+            return dateYear == eventfulYear &&
+                   dateMonth.toString() == eventfulMonth &&
+                   dateDay.toString() == eventfulDay;
         }
         
         function eventLater(eventfulTime) {
@@ -199,6 +210,8 @@ angular.module('Planz')
                         }).then(function (res) {
                             var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
                             for (var i=0; i<res.data.events.event.length; i++) {
+                                var event = res.data.events.event[i];
+                            
                                 if (invalidEvent(event)) {
                                     res.data.events.event.splice(i, 1);
                                     i--;
