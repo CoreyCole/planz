@@ -1,5 +1,8 @@
 <div class="swipe" ng-controller="SwipeCtrl">
-    <div class="overlay" ng-show="loading"><img src="http://media.giphy.com/media/JBeu9q9LC1Kve/giphy.gif"></div>
+    <div class="overlay" ng-show="loading">
+        <img src="http://media.giphy.com/media/JBeu9q9LC1Kve/giphy.gif">
+        <div class="loading_text"><b>Loading Data...</b></div>
+    </div>
     <md-card>
         <img ng-src="{{currentEvent.image.medium.url}}" class="md-card-image" alt="event image">
         <md-card-title>
@@ -8,8 +11,8 @@
             </md-card-title-text>
         </md-card-title>
         <md-card-content>
-            <p>{{currentEvent.venue_address}}</p>
-            <p>{{currentEvent.start_time}}</p>
+            <p>Location: {{currentEvent.venue_address}}</p>
+            <p>Time: {{currentEvent.start_time}}</p>
         </md-card-content>
     </md-card>
     <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>

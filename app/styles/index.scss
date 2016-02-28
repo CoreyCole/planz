@@ -1,13 +1,31 @@
+$margin-large: 100px;
+$large-button-font-size: 25px;
+$large-button-padding: 5px 10px;
+
 .index {
     
 }
 
 .new {
-
+    text-align:center;
+    
+    .new-button {
+        position: relative;
+        top: calc(45vh - #{$margin-large});
+        font-size: $large-button-font-size;
+        padding: $large-button-padding;
+    }
 }
 
 .register {
-
+    .register-btn-div {
+        text-align:center;
+    
+        .register-btn {
+            font-size: $large-button-font-size;
+            padding: $large-button-padding;
+        }
+    }
 }
 
 .start {
@@ -19,13 +37,14 @@
 }
 
 $load-width: 100px;
-$banner-height: 64px;
+$banner-height: 56px;
+$banner-buffer: 8px;
 
 .overlay {
     position: absolute;
     z-index: 21;
     width: 100%;
-    height: calc(100% - #{$banner-height});
+    height: calc(100% - #{$banner-height} - #{$banner-buffer});
     background: rgba(255,255,255,0.5);
     
     img {
@@ -34,7 +53,32 @@ $banner-height: 64px;
         position: absolute;
         left: calc((100% - #{$load-width}) / 2);
         top: calc(50% - #{$load-width});
-        
-        
     }
+    
+    .loading_text {
+        text-align: center;
+        position: relative;
+        top: 50%;
+    }
+}
+
+.background-image-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    
+    .background-image {
+        position: absolute;
+        height: 115%;
+        top: calc(-1 * #{$banner-height});
+        left: -80px;
+        opacity: 0.55;
+    }
+}
+
+.transparent-background {
+    background-color: rgba(0,0,0,0);
 }
