@@ -4,8 +4,8 @@
  * # MainCtrl
  */
 angular.module('Planz')
-    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $stateParams, eventfulKey, rootRef) {
-        var eventIndex = 0;
+    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $stateParams, $http, eventfulKey, rootRef) {
+        var eventIndex = 95;
 
         var categories = {
             music: {'count': 0},
@@ -40,7 +40,8 @@ angular.module('Planz')
         };
 
         $scope.plan = $firebaseObject(rootRef.child('Planz').child($stateParams.planid));
-        $scope.plan.$loaded().then(function (planref) { 
+        $scope.plan.$loaded().then(function (planref) {
+            $scope.date = planref.date;
 
             $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
             $scope.planEvents.$loaded().then(function(planEventsref) {
@@ -52,8 +53,11 @@ angular.module('Planz')
                     $scope.Events.$loaded().then(function(eventsref) {
 
                         for (var i = 0; i < eventsref.length; i++) {
-                            if (eventsref[i].date === planref.date)
+                            if (eventsref[i].date === $scope.date) {
                                 $scope.dayEvents = eventsref[i].events;
+                                $scope.currPage = eventsref[i].page;
+                                $scope.firebaseEventID = eventsref[i].$id;
+                            }
                         }
                         $scope.currentEvent = $scope.dayEvents[eventIndex];
                     });
@@ -92,9 +96,37 @@ angular.module('Planz')
                             console.log('it did someting');
                         });
                     }
+
+                    eventIndex += 1;
+                    if (eventIndex < $scope.dayEvents.length) {
+                        $scope.currentEvent = $scope.dayEvents[eventIndex];
+                    } else {
+                        $scope.currPage += 1;
+                        $http({
+                            method: 'GET',
+                            url: 'http://api.eventful.com/json/events/search',
+                            params: {
+                                app_key: eventfulKey,
+                                where: $scope.city,
+                                date: $scope.date + '-' + $scope.date,
+                                sort_order: 'popularity',
+                                page_size: 100,
+                                page_number: $scope.currPage
+                            }
+                        }).then(function (res) {
+                            var arr = res.data.events.event;
+                            for (var i = 0; i < arr.length; i++) {
+                                $scope.dayEvents.push( arr[i] );
+                            }
+                            console.log($scope.dayEvents.length);
+                        });
+                        $scope.currentEvent = $scope.dayEvents[eventIndex];
+                    }
                 });
             });
         };
+
+        // TODO Query only events that have image (not the hot air balloon)
 
         // TODO when matthew finds his precious categories
         // function getNextIndex() {
