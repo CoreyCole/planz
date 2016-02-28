@@ -5,6 +5,8 @@
  */
 angular.module('Planz')
     .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $state, $stateParams, $http, eventfulKey, rootRef) {
+        $scope.loading = false;
+        
         var eventIndex = 0;
         var pageIndex = 0;
 
@@ -123,6 +125,7 @@ angular.module('Planz')
                             $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
                         } 
                         else {
+                            $scope.loading = true;
                             eventIndex = 0;
                             pageIndex += 1;
                             $http({
@@ -153,6 +156,7 @@ angular.module('Planz')
                                 $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
                                     console.log('it worked!');
                                     $scope.currentEvent = $scope.dayEvents[pageIndex][eventIndex];
+                                    $scope.loading = true;
                                 });
                             });
                         }

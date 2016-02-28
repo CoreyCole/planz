@@ -10,6 +10,8 @@ angular.module('Planz')
         $scope.city = 'Vancouver';
         $scope.date = new Date();
         $scope.time = moment();
+                
+        $scope.loading = false;
 
         $scope.register = function() {
             var plan = {
@@ -21,6 +23,7 @@ angular.module('Planz')
 
             $scope.Events = $firebaseArray(rootRef.child('Events'));
             $scope.Events.$loaded().then(function(ref) {
+                $scope.loading = true;
                 var flag = false;
                 for (var i = 0; i < ref.length; i++) {
                     if (ref[i].date === getDateEventfulFormat())
@@ -55,11 +58,13 @@ angular.module('Planz')
                         });
                         $scope.Planz.$add(plan).then(function(ref) {
                             $state.go('start', { planid : ref.key() });
+                            $scope.loading = false;
                         });
                     });
                 } else {
                     $scope.Planz.$add(plan).then(function(ref) {
                         $state.go('start', { planid : ref.key() });
+                        $scope.loading = false;
                     });
                 }
             });
