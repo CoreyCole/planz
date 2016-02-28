@@ -34,7 +34,13 @@ $large-button-padding: 5px 10px;
 }
 
 .start {
+    h1 {
+        text-align: center;
+    }
 
+    .stuff {
+        text-align: center;
+    }
 }
 
 .swipe {
@@ -56,8 +62,6 @@ $large-button-padding: 5px 10px;
             background-color:#63DE9A;
         }
     }
-
-
 }
 
 .success {
@@ -89,7 +93,7 @@ $banner-buffer: 8px;
     position: absolute;
     z-index: 21;
     width: 100%;
-    height: calc(100% - #{$banner-height} - #{$banner-buffer});
+    height: 100%;
     background: rgba(255,255,255,0.5);
     
     img {
