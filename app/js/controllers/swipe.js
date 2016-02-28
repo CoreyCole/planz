@@ -126,6 +126,8 @@ angular.module('Planz')
             });
         };
 
+        // TODO add page 2 (more than first 100)
+
         // TODO Query only events that have image (not the hot air balloon)
 
         // TODO when matthew finds his precious categories
