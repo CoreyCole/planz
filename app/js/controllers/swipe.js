@@ -11,6 +11,10 @@ angular.module('Planz')
             console.dir(ref);
         });
 
+        $scope.currentEvent = {
+
+        };
+
         $scope.categories = {
             music: {'count': 0},
             conference: {'count': 0},

@@ -1,3 +1,14 @@
 <div class="swipe" ng-controller="SwipeCtrl">
-
+    <md-card>
+        <img ng-src="{{currentEvent.imagePath}}" class="md-card-image" alt="event image">
+        <md-card-title>
+            <md-card-title-text>
+                <span class="md-headline">{{currentEvent.title}}</span>
+            </md-card-title-text>
+        </md-card-title>
+        <md-card-content>
+            <p>{{currentEvent.address}}</p>
+            <p>{{currentEvent.time}}</p>
+        </md-card-content>
+    </md-card>
 </div>
