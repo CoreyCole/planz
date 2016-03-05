@@ -26,6 +26,10 @@ angular.module('Planz')
                 url: '/success/:planid',
                 templateUrl: 'views/success.html'
             })
+            .state('failure', {
+                url: '/failure/:planid',
+                templateUrl: 'views/failure.html'
+            })
             .state('waiting', {
                 url: '/waiting/:planid',
                 templateUrl: 'views/waiting.html'

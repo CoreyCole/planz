@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * # MainCtrl
+ * # StartCtrl
  */
 angular.module('Planz')
     .controller('StartCtrl', function ($scope, $stateParams, baseUrl) {

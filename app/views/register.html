@@ -25,7 +25,7 @@
                 <input ng-model="numSwipes" type="number" ng-required="true">
             </md-input-container>
             <div class="register-btn-div">
-                <md-button ng-disabled="!numSwipes" class="md-button md-raised md-primary register-btn" ng-click="register()" aria-label="remove item">
+                <md-button ng-disabled="!numSwipes || !city" class="md-button md-raised md-primary register-btn" ng-click="register()" aria-label="remove item">
                     Create Event
                 </md-button>
             </div>

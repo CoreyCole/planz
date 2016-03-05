@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * # MainCtrl
+ * # IndexCtrl
  */
 angular.module('Planz')
     .controller('IndexCtrl', function ($scope) {

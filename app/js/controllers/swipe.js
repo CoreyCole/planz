@@ -1,10 +1,12 @@
  'use strict';
 
 /**
- * # MainCtrl
+ * # SwipeCtrl
  */
 angular.module('Planz')
-    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $state, $stateParams, $http, eventfulKey, rootRef) {
+    .controller('SwipeCtrl', function ($scope, $firebaseObject, $firebaseArray, $state, $stateParams,
+        $http, notAvailableImageUrl, incorrectImageMediumUrl, eventfulKey, rootRef) {
+
         $scope.loading = false;
         
         var eventIndex = 0;
@@ -45,20 +47,10 @@ angular.module('Planz')
         
         function invalidEvent(event) {
             // check that the title doesn't have the word "cancelled" in it
-            if (event.title.toLowerCase().indexOf("cancelled") > -1) {
-                return true;
-            }
-            
-            // check that the start/end time are valid
-            if (!dateMatch(event.start_time) || (!event.stop_time == null && !dateMatch(event.stop_time))) {
-                return true;
-            }
-            
-            if (!eventLater(event.start_time)) {
-                return true;
-            }
-            
-            return false;
+            return event.title.toLowerCase().indexOf("cancelled") > -1 ||
+                // check that the start/end time are valid
+                !dateMatch(event.start_time) || 
+                (!event.stop_time == null && !dateMatch(event.stop_time));
         }
         
         function dateMatch(eventfulTime) {
@@ -67,23 +59,21 @@ angular.module('Planz')
             var eventfulMonth = eventfulTime.substring(5, 7);
             var eventfulDay = eventfulTime.substring(8, 10);
             
-            if (eventfulMonth.substring(0, 1) == "0") {
+            if (eventfulMonth.substring(0, 1) == "0") 
                 eventfulMonth = eventfulMonth.substring(1, 2);
-            }
-            if (eventfulDay.substring(0, 1) == "0") {
+
+            if (eventfulDay.substring(0, 1) == "0") 
                 eventfulDay = eventfulDay.substring(1, 2);
-            }
             
             var dateYear = $scope.date.substring(0, 4);
             var dateMonth = $scope.date.substring(4, 6);
             var dateDay = $scope.date.substring(6, 8);
             
-            if (dateMonth.substring(0, 1) == "0") {
+            if (dateMonth.substring(0, 1) == "0") 
                 dateMonth = dateMonth.substring(1, 2);
-            }
-            if (dateDay.substring(0, 1) == "0") {
+        
+            if (dateDay.substring(0, 1) == "0") 
                 dateDay = dateDay.substring(1, 2);
-            }
             
             return dateYear == eventfulYear &&
                    dateMonth.toString() == eventfulMonth &&
@@ -91,49 +81,57 @@ angular.module('Planz')
         }
         
         function eventLater(eventfulTime) {
-            var date = $scope.time;
-            var hour = date.substring(0,2);
-            var minute = date.substring(3,5);
+            var time = $scope.time;
+            var hour = time.substring(0,2);
+            var minute = time.substring(3,5);
             
             var eventfulHour = eventfulTime.substring(11,13);
             var eventfulMinute = eventfulTime.substring(14,16);
             
-            if (eventfulHour > hour) {
-                return true;
-            }
-            
-            else return eventfulMinute >= minute;
+            return eventfulHour > hour || (eventfulHour == hour && eventfulMinute >= minute);
         }
 
         $scope.plan = $firebaseObject(rootRef.child('Planz').child($stateParams.planid));
         $scope.plan.$loaded().then(function (planref) {
+
             $scope.date = planref.date;
             $scope.numSwipes = planref.numSwipes;
             $scope.time = planref.time;
             $scope.city = planref.city;
 
-            $scope.success = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('success'))
+            if (planref.numDone >= $scope.numSwipes)
+                $state.go('failure', {planid : $stateParams.planid});
+
+            $scope.plan.$watch(function() {
+                if ($scope.plan.numDone >= $scope.numSwipes)
+                    $state.go('failure', {planid : $stateParams.planid});
+            });
+
+            $scope.success = $firebaseArray(rootRef.child('Planz')
+                .child($stateParams.planid).child('success'))
             $scope.success.$loaded().then(function(successref) {
 
-                if (successref.length > 0 ) {
-                    $state.go('success', { planid : $stateParams.planid });
-                }
+                if (successref.length > 0)
+                    $state.go('success', {planid : $stateParams.planid});
 
                 $scope.success.$watch(function() {
-                    $state.go('success', { planid : $stateParams.planid });
+                    $state.go('success', {planid : $stateParams.planid});
                 });
 
-                $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
+                $scope.planEvents = $firebaseArray(rootRef.child('Planz')
+                    .child($stateParams.planid).child('events'));
                 $scope.planEvents.$loaded().then(function(planEventsref) {
 
-                    $scope.planCats = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('categories'));
+                    $scope.planCats = $firebaseArray(rootRef.child('Planz')
+                        .child($stateParams.planid).child('categories'));
                     $scope.planCats.$loaded().then(function(planCatsref) {
 
                         $scope.Events = $firebaseArray(rootRef.child('Events'));
                         $scope.Events.$loaded().then(function(eventsref) {
 
                             for (var i = 0; i < eventsref.length; i++) {
-                                if (eventsref[i].date === $scope.date) {
+                                if (eventsref[i].date === $scope.date && 
+                                    eventsref[i].city === $scope.city) {
                                     $scope.dayEvent = eventsref[i];
                                     getNextPageAndEventIndex();
                                     break;
@@ -146,85 +144,101 @@ angular.module('Planz')
         });
 
         function getNextPageAndEventIndex() {
-            $scope.planEvents = $firebaseArray(rootRef.child('Planz').child($stateParams.planid).child('events'));
+            $scope.planEvents = $firebaseArray(rootRef.child('Planz')
+                .child($stateParams.planid).child('events'));
             $scope.Events.$loaded().then(function(eventsref) {
  
-                for (var i = 0; i < eventsref.length; i++) {
-                    if (eventsref[i].date === $scope.date) {
+                for (var i = 0; i < eventsref.length; i++)
+                    if (eventsref[i].date === $scope.date) 
                         $scope.dayEvent = eventsref[i];
-                    }
-                }
- 
-                $scope.planCats.$loaded().then(function(planCatsref) {
-                    for (var i = pageIndex; i < $scope.dayEvent.events.length; i++) {
-                        for (var j = eventIndex; j < $scope.dayEvent.events[i].length; j++) {
-                            var flag = false;
-                            for (var k = 0; k < $scope.dayEvent.events[i][j].categories.category.length; k++) {
-                                for (var l = 0; l < $scope.planCats.length; l++) {
-                                    if ($scope.dayEvent.events[i][j].categories.category[k].id === planCatsref[l].category) {
-                                        flag = true;
-                                        break;
+                
+                $scope.planEvents.$loaded().then(function(planEventsref) {
+                    $scope.planCats.$loaded().then(function(planCatsref) {
+                        for (var i = pageIndex; i < $scope.dayEvent.events.length; i++) {
+                            for (var j = eventIndex; j < $scope.dayEvent.events[i].length; j++) {
+                                var flag = false;
+                                var eventij = $scope.dayEvent.events[i][j];
+                                if (!eventLater(eventij.start_time))
+                                    flag = true;
+                                else {
+                                    for (var m = 0; m < planEventsref.length; m++) {
+                                        if (eventij.id === planEventsref[m].eventID) {
+                                            flag = planEventsref[m].dislikes > 0;
+                                            break;
+                                        }
                                     }
                                 }
-                                if (flag) {
-                                    break;
+                                if (!flag) {
+                                    for (var k = 0; k < eventij.categories.category.length; k++) {
+                                        for (var l = 0; l < planCatsref.length; l++) {
+                                            if (eventij.categories.category[k].id === 
+                                                planCatsref[l].category) {
+                                                flag = true;
+                                                break;
+                                            }
+                                        }
+                                        if (flag)
+                                            break;
+                                    }
                                 }
-                            }
-                            if (flag) {
-                                flag = false;
-                            }
-                            else {
-                                pageIndex = i;
-                                eventIndex = j;
-                                $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
-                                return;
+                                if (flag) 
+                                    flag = false;
+                                else {
+                                    pageIndex = i;
+                                    eventIndex = j;
+                                    $scope.currentEvent = $scope.dayEvent.events[pageIndex][eventIndex];
+                                    return;
+                                }
                             }
                         }
-                    }
 
-                    if (pageIndex == pageLimit) {
-                        $state.go('waiting', { planid : $stateParams.planid });
-                    }
-                    else{
-                        $scope.loading = true;
-                        eventIndex = 0;
-                        pageIndex += 1;
+                        if (pageIndex == pageLimit) {
+                            $scope.plan.numDone += 1;
+                            console.log($scope.plan.numDone);
+                            $scope.plan.$save();
+                            $state.go('waiting', {planid : $stateParams.planid});
+                        }
 
-                        $http({
-                            method: 'GET',
-                            url: 'http://api.eventful.com/json/events/search',
-                            params: {
-                                app_key: eventfulKey,
-                                where: $scope.city,
-                                'date': $scope.date + '-' + $scope.date,
-                                'include': "tags,categories",
-                                sort_order: 'popularity',
-                                page_size: 100,
-                                page_number: pageIndex + 1
-                            }
-                        }).then(function (res) {
-                            var notAvailableImg = "http://www.motorolasolutions.com/content/dam/msi/images/business/products/accessories/mc65_accessories/kt-122621-50r/_images/static_files/product_lg_us-en.jpg";
-                            for (var i=0; i<res.data.events.event.length; i++) {
-                                var event = res.data.events.event[i];
-                            
-                                if (invalidEvent(event)) {
-                                    res.data.events.event.splice(i, 1);
-                                    i--;
-                                } else if (res.data.events.event[i].image == null) {
-                                    res.data.events.event[i].image = { medium: { url: notAvailableImg } }
-                                } else if (res.data.events.event[i].image.medium.url == "http://s1.evcdn.com/store/skin/no_image/categories/128x128/other.jpg") {
-                                    res.data.events.event[i].image.medium.url = notAvailableImg;
+                        else {
+                            $scope.loading = true;
+                            eventIndex = 0;
+                            pageIndex += 1;
+
+                            $http({
+                                method: 'GET',
+                                url: 'https://api.eventful.com/json/events/search',
+                                params: {
+                                    app_key: eventfulKey,
+                                    where: $scope.city,
+                                    'date': $scope.date + '-' + $scope.date,
+                                    'include': "tags,categories",
+                                    sort_order: 'popularity',
+                                    page_size: 100,
+                                    page_number: pageIndex + 1
                                 }
-                            }
+                            }).then(function (res) {
+                                for (var i = 0; i < res.data.events.event.length; i++) {
+                                    var eventi = res.data.events.event[i];
+                                
+                                    if (invalidEvent(eventi)) {
+                                        res.data.events.event.splice(i, 1);
+                                        i--;
+                                    } 
+                                    else if (eventi.image == null) 
+                                        eventi.image = {medium: {url: notAvailableImageUrl}}
+                                    else if (eventi.image.medium.url == incorrectImageMediumUrl)
+                                        eventi.image.medium.url = notAvailableImageUrl;
+                                }
 
-                            $scope.dayEvent.events[pageIndex] = res.data.events.event;
-                            $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
-                                $scope.loading = false;
-                                console.log('the five seasons of rain');
-                                getNextPageAndEventIndex();
+                                $scope.dayEvent.events[pageIndex] = res.data.events.event;
+                                $scope.Events.$save($scope.dayEvent).then(function(updateRef) {
+                                    $scope.loading = false;
+                                    console.log('the five seasons of rain');
+                                    getNextPageAndEventIndex();
+                                });
                             });
-                        });
-                    }
+                        }
+                    });
                 });
             });
         } 
@@ -238,36 +252,29 @@ angular.module('Planz')
                         var planEventCat = $scope.currentEvent.categories.category;
                         var planEvent;
 
-                        for (var i = 0; i < planEventsref.length; i++) {
+                        for (var i = 0; i < planEventsref.length; i++)
                             if (planEventsref[i].eventID === planEventID)
                                 planEvent = planEventsref[i];
-                        }
 
                         if (!planEvent) {
-                            if (right) {
+                            if (right) 
                                 planEvent = {eventID: planEventID, likes: 1, dislikes: 0};
-                            }
-                            else {
+                            else 
                                 planEvent = {eventID: planEventID, likes: 0, dislikes: 1};
-                            }
                             $scope.planEvents.$add(planEvent);
                         }
-
                         else {
-                            if (right) {
+                            if (right) 
                                 planEvent.likes += 1;
-                            }
-                            else {
+                            else 
                                 planEvent.dislikes += 1;
-                            }
-                            $scope.planEvents.$save(planEvent).then(function(updateRef) {
-                            });
+                            $scope.planEvents.$save(planEvent).then(function(updateRef) {});
                         }
 
                         if(!right) {
                             for (var i = 0; i < planEventCat.length; i++) {
                                 if (planEventCat[i].id in categoriesCount) {
-                                    categoriesCount[planEventCat[i].id].count += 1
+                                    categoriesCount[planEventCat[i].id].count += 1;
                                     if (categoriesCount[planEventCat[i].id].count >= 5) {
                                         console.log('The mystical parrot of paradise');
                                         $scope.planCats.$add({category: planEventCat[i].id });
@@ -277,10 +284,9 @@ angular.module('Planz')
                         }
 
                         if (planEvent.likes >= $scope.numSwipes) {
-                            console.log('got here');
+                            console.log('found the pot of gold');
                             $scope.success.$add({event: $scope.currentEvent});
                         }
-
                         else {
                             eventIndex += 1;
                             getNextPageAndEventIndex();

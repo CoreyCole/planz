@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * # MainCtrl
+ * # NewCtrl
  */
 angular.module('Planz')
     .controller('NewCtrl', function ($scope) {
