@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mdnyhus/NWHacks.git"
+    "url": "git+https://github.com/CoreyCole/planz.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mdnyhus/NWHacks/issues"
+    "url": "https://github.com/CoreyCole/planz/issues"
   },
-  "homepage": "https://github.com/mdnyhus/NWHacks#readme"
+  "homepage": "https://github.com/CoreyCole/planz#readme"
 }
