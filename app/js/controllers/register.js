@@ -20,7 +20,10 @@ angular.module('Planz')
                 geocoder.geocode({'latLng': latlng}, function (results, status) {
                     for (var i = 0; i < results[0].address_components.length; i++)
                         if (results[0].address_components[i].types.indexOf('locality') >= 0)
-                            $scope.city = results[0].address_components[i].short_name;
+                            $scope.$apply(function() { 
+                                console.log("but what about me?");
+                                $scope.city = results[0].address_components[i].short_name;
+                            });
                 });
             });
         }

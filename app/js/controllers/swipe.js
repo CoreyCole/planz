@@ -194,7 +194,6 @@ angular.module('Planz')
 
                         if (pageIndex == pageLimit) {
                             $scope.plan.numDone += 1;
-                            console.log($scope.plan.numDone);
                             $scope.plan.$save();
                             $state.go('waiting', {planid : $stateParams.planid});
                         }

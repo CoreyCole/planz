@@ -14,9 +14,9 @@ angular.module('Planz')
             try {
                 var successful = document.execCommand('copy');
                 var msg = successful ? 'successful' : 'unsuccessful';
-                console.log('Copying text command was ' + msg);
+                console.log('this was a ' + msg + ' swag');
             } catch (err) {
-                console.log('Oops, unable to copy');
+                console.log('Let us just hope you never see this');
             }
         }
     });
