@@ -7,9 +7,28 @@ angular.module('Planz')
     .controller('RegisterCtrl', function ($scope, $firebaseArray, $state, $http, $filter, eventfulKey, rootRef) {
         $scope.Planz = $firebaseArray(rootRef.child('Planz'));
         $scope.loading = false;
-        $scope.city = 'Vancouver';
+        $scope.city = '';
         $scope.date = new Date();
         $scope.time = moment().format('LT');
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                var geocoder = new google.maps.Geocoder();
+                var latlng = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+
+                geocoder.geocode({ 'latLng': latlng}, function (results, status) {
+                    var result = results[0];
+                    var state = '';
+
+                    for (var i = 0, len = result.address_components.length; i < len; i++) {
+                        var ac = result.address_components[i];
+                        if (ac.types.indexOf('locality') >= 0) {
+                            $scope.city = ac.short_name;
+                        }
+                    }
+                });
+            });
+        }
 
         $scope.$watch('time', function() {
             $scope.timeChange = moment(new Date($scope.time));
@@ -24,7 +43,8 @@ angular.module('Planz')
             }
             
             // check that the start/end time are valid
-            if (!dateMatch(event.start_time) || (!event.stop_time == null && !dateMatch(event.stop_time))) {
+            if (!dateMatch(event.start_time) || 
+                (!event.stop_time == null && !dateMatch(event.stop_time))) {
                 return true;
             }
             
