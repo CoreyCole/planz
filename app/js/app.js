@@ -11,7 +11,12 @@ angular.module('Planz', [
 ])
     .constant('firebaseUrl', 'https://planz.firebaseio.com/')
     .constant('eventfulKey', 'wKZhJ3S2hDDLHtD5')
-    .constant('baseUrl', 'http://localhost:9000/index.html#')
+    .factory('baseUrl', function() {
+        if (location.hostname === 'localhost') 
+            return 'http://localhost:9000/index.html#'
+        else
+            return 'https://planz.firebaseapp.com/#'
+    })
     .factory('rootRef', function(firebaseUrl) {
         return new Firebase(firebaseUrl);
     });
