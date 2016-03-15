@@ -106,7 +106,7 @@ angular.module('Planz')
                             else if (eventi.image == null) 
                                 eventi.image = {medium: {url: notAvailableImageUrl}}
                             else if (eventi.image.medium.url == incorrectImageMediumUrl)
-                                eventi.image.medium.url = notAvailableImg;
+                                eventi.image.medium.url = notAvailableImageUrl;
                         }
                         
                         $scope.Events.$add({
