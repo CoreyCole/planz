@@ -83,19 +83,13 @@ angular.module('Planz')
                         flag = true;
 
                 if (!flag) {
-                    $http({
-                        method: 'GET',
-                        url: 'https://api.eventful.com/json/events/search',
-                        params: {
-                            app_key: eventfulKey,
-                            where: $scope.city,
-                            'date': getDateEventfulFormat() + '-' + getDateEventfulFormat(),
-                            'include': "tags,categories",
-                            sort_order: 'popularity',
-                            page_size: 100,
-                            page_number: 1,
-                        }
-                    }).then(function (res) {
+                    var url = 'https://api.eventful.com/jsonp/events/search?app_key=' + eventfulKey +
+                                '&where= ' + $scope.city + 
+                                '&date=' + getDateEventfulFormat() + '-' + getDateEventfulFormat() +
+                                '&include=tags,categories' + '&sort_order=popularity' +
+                                '&page_size=100' + '&page_number=1' + 
+                                '&callback=JSON_CALLBACK'
+                    $http.jsonp(url).then(function (res) {
                         for (var i = 0; i < res.data.events.event.length; i++) {
                             var eventi = res.data.events.event[i];
                             
@@ -118,7 +112,7 @@ angular.module('Planz')
                             $state.go('start', {planid : ref.key()});
                             $scope.loading = false;
                         });
-                    });
+                    }, function (err) { console.log("got here"); console.log(err)});
                 } 
                 else {
                     $scope.Planz.$add(plan).then(function(ref) {
